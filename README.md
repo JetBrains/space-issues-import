@@ -1,7 +1,7 @@
 # Import Issues into Space 🚀 
 ![](https://jb.gg/badges/incubator-flat-square.svg)
 
-This script imports basic issues information (summary, description, assignee, status) from external systems into Space, see the list and examples below.
+This script imports basic issues information (summary, description, assignee, status) from external systems into JetBrains Space, see the list and examples below.
 
 Full documentation is here.
 
