@@ -1,0 +1,43 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.4.10'
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    google()
+    jcenter()
+    mavenCentral()
+    maven { url "https://jetbrains.bintray.com/youtrack-rest-client" }
+    maven { url "https://kotlin.bintray.com/kotlinx/" }
+    maven { url 'https://jitpack.io' }
+    maven { url "https://maven.pkg.jetbrains.space/public/p/space-sdk/maven" }
+}
+
+def space_sdk_version = '60243-beta'
+def youtrack_rest_client_version = '0.2.11'
+def kotlinx_coroutines_version = '1.3.8'
+def ktor_client_apache_version = '1.3.2'
+def kotlin_argparser_version = '2.0.7'
+def logback_version = '1.2.3'
+
+dependencies {
+    implementation "org.jetbrains:space-sdk-jvm:$space_sdk_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_coroutines_version"
+    implementation "io.ktor:ktor-client-apache:$ktor_client_apache_version"
+
+    implementation "org.jetbrains.youtrack:youtrack-rest-client:$youtrack_rest_client_version"
+    implementation "ch.qos.logback:logback-classic:$logback_version"
+    implementation 'io.github.microutils:kotlin-logging:1.12.0'
+
+    implementation "com.xenomachina:kotlin-argparser:$kotlin_argparser_version"
+}
+
+jar {
+    manifest {
+        attributes "Main-Class": "com.jetbrains.space.import.MainKt"
+    }
+
+    from { configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+}
