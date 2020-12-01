@@ -22,7 +22,7 @@ data class CommandLineArgs(private val parser: ArgParser) {
 
     val youtrackToken by parser.storing(
         "--youtrackToken",
-        help = "Optional YouTrack token to access server. Will fetch issues as a guest otherwise"
+        help = "YouTrack token to access server; will fetch issues as a guest otherwise"
     ).default(null)
 
     val spaceServer by parser.storing(
@@ -63,19 +63,19 @@ data class CommandLineArgs(private val parser: ArgParser) {
     val onExistsPolicy by parser.mapping(
         "--updateExistingIssues" to ImportExistsPolicy.Update,
         "--skipExistingIssues" to ImportExistsPolicy.Skip,
-        help = "tells Space what should be done when issues match by external id"
+        help = "tell Space what should be done when issues match by external id"
     ).default(ImportExistsPolicy.Skip)
 
     val statusMissingPolicy by parser.mapping(
         "--replaceMissingStatus" to ImportMissingPolicy.ReplaceWithDefault,
         "--skipMissingStatus" to ImportMissingPolicy.Skip,
-        help = "tells Space what should be done when it does not have a status"
+        help = "tell Space what should be done when it does not have a status"
     ).default(ImportMissingPolicy.Skip)
 
     val assigneeMissingPolicy by parser.mapping(
         "--replaceMissingAssignee" to ImportMissingPolicy.ReplaceWithDefault,
         "--skipMissingAssignee" to ImportMissingPolicy.Skip,
-        help = "tells Space what should be done when it does not have a assignee"
+        help = "tell Space what should be done when it does not have a assignee"
     ).default(ImportMissingPolicy.Skip)
 
     // add-ons

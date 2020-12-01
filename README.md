@@ -53,21 +53,21 @@ required arguments:
 optional arguments:
   -h, --help                        show this help message and exit
 
-  --youtrackToken YOUTRACKTOKEN     Optional YouTrack token to access server.
-                                    Will fetch issues as a guest otherwise
+  --youtrackToken YOUTRACKTOKEN     YouTrack token to access server;
+                                    will fetch issues as a guest otherwise
 
   --importSource IMPORTSOURCE       Import source name
 
   --dryRun                          tell Space to run import without actually
                                     creating issues
 
-  --updateExistingIssues,           tells Space what should be done when
+  --updateExistingIssues,           tell Space what should be done when
   --skipExistingIssues              issues match by external id
 
-  --replaceMissingStatus,           tells Space what should be done when it
+  --replaceMissingStatus,           tell Space what should be done when it
   --skipMissingStatus               does not have a status
 
-  --replaceMissingAssignee,         tells Space what should be done when it
+  --replaceMissingAssignee,         tell Space what should be done when it
   --skipMissingAssignee             does not have a assignee
 
   -a ASSIGNEE, --assignee ASSIGNEE  map assignee from external system to Space
