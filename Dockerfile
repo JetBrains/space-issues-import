@@ -1,4 +1,4 @@
-FROM openjdk:11.0.3-jdk
+FROM openjdk:11.0.3-jdk-slim
 
 MAINTAINER Dmitrii Petukhov <dmitrii.petukhov@jetbrains.com>
 
