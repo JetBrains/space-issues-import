@@ -5,9 +5,9 @@ This script imports basic issues information (summary, description, assignee, st
 
 Full documentation is here.
 
-## YouTrack
+## From YouTrack
 ```
-$ docker run TODO/IMAGE/space-import-issues 
+$ docker run public.registry.jetbrains.space/p/space/containers/space-issues-import:latest 
          --youtrackServer https://youtrack.jetbrains.com 
          --youtrackQuery "project:SPACE module: UI #Unresolved" 
          --spaceServer http://jetbrains.team 
@@ -21,7 +21,7 @@ $ docker run TODO/IMAGE/space-import-issues
          --replaceMissingAssignee
 ```
 
-## GitHub
+## From GitHub
 `In progress`
 
 # Arguments
