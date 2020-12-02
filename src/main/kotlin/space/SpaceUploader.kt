@@ -16,30 +16,32 @@ class SpaceUploader {
 
     @InternalAPI
     suspend fun upload(
-        server: String,
-        token: String,
-        issues: List<ExternalIssue>,
-        projectIdentifier: ProjectIdentifier,
-        importSource: String,
-        assigneeMissingPolicy: ImportMissingPolicy,
-        statusMissingPolicy: ImportMissingPolicy,
-        onExistsPolicy: ImportExistsPolicy,
-        dryRun: Boolean
+            server: String,
+            token: String,
+            issues: List<ExternalIssue>,
+            projectIdentifier: ProjectIdentifier,
+            importSource: String,
+            assigneeMissingPolicy: ImportMissingPolicy,
+            statusMissingPolicy: ImportMissingPolicy,
+            onExistsPolicy: ImportExistsPolicy,
+            dryRun: Boolean,
+            batchSize: Int
     ) {
         val httpClient = createHttpClient()
         val spaceClient = SpaceHttpClient(httpClient).withPermanentToken(token, server)
 
-        val response = spaceClient.projects.planning.issues.importIssues(
-            project = projectIdentifier,
-            metadata = ImportMetadata(importSource),
-            issues = issues,
-            assigneeMissingPolicy = assigneeMissingPolicy,
-            statusMissingPolicy = statusMissingPolicy,
-            onExistsPolicy = onExistsPolicy,
-            dryRun = dryRun
-        )
-
-        logger.info(response.message)
+        issues.chunked(batchSize).forEach { issuesBatched ->
+            val response = spaceClient.projects.planning.issues.importIssues(
+                    project = projectIdentifier,
+                    metadata = ImportMetadata(importSource),
+                    issues = issuesBatched,
+                    assigneeMissingPolicy = assigneeMissingPolicy,
+                    statusMissingPolicy = statusMissingPolicy,
+                    onExistsPolicy = onExistsPolicy,
+                    dryRun = dryRun
+            )
+            logger.info(response.message)
+        }
     }
 
     private fun createHttpClient(): HttpClient {

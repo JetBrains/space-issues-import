@@ -31,7 +31,7 @@ usage: [-h] --youtrackServer YOUTRACKSERVER --youtrackQuery YOUTRACKQUERY
        --spaceToken SPACETOKEN --spaceProject SPACEPROJECT
        [--importSource IMPORTSOURCE] [--dryRun] [--updateExistingIssues]
        [--replaceMissingStatus] [--replaceMissingAssignee] [-a ASSIGNEE]...
-       [-s STATUS]...
+       [-s STATUS]... [--batchSize BATCHSIZE]
 
 required arguments:
   --youtrackServer YOUTRACKSERVER   The URL of the YouTrack server that you
@@ -62,7 +62,7 @@ optional arguments:
                                     guest account.
 
   --importSource IMPORTSOURCE       The name of the import source. Default:
-                                    YouTrack
+                                    YouTrack.
 
   --dryRun                          Runs the import script without actually
                                     creating issues.
@@ -70,19 +70,19 @@ optional arguments:
   --updateExistingIssues,           Tells Space how to process issues when
   --skipExistingIssues              their external IDs matches previously
                                     imported issues in Space. Default:
-                                    skipExistingIssues
+                                    skipExistingIssues.
 
   --replaceMissingStatus,           Tells Space how to handle issues when the
   --skipMissingStatus               value for the status field does not exist.
                                     `replaceMissingStatus` sets it to the
                                     first unresolved status. Default:
-                                    `skipMissingStatus`
+                                    `skipMissingStatus`.
 
   --replaceMissingAssignee,         Tells Space how to handle issues when the
   --skipMissingAssignee             value for the assignee field does not
                                     exist. `replaceMissingAssignee` sets it to
                                     `unassigned`. Default:
-                                    `skipMissingAssignee`
+                                    `skipMissingAssignee`.
 
   -a ASSIGNEE, --assignee ASSIGNEE  Maps the assignee in the external system
                                     to a member profile in Space. For example,
@@ -91,6 +91,9 @@ optional arguments:
   -s STATUS, --status STATUS        Maps an issue status in the external
                                     system to an issue status in Space. For
                                     example, in-progress::In Progress.
+
+  --batchSize BATCHSIZE             The size of a batch with issues being sent
+                                    to Space per request. Default: 50.
 ```
 
 # Build and Run Locally

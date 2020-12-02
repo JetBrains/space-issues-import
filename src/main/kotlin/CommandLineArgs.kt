@@ -93,6 +93,12 @@ data class CommandLineArgs(private val parser: ArgParser) {
             transform = { parseMapping(this) }
     ).default(emptyList())
 
+    val batchSize by parser.storing(
+            "--batchSize",
+            help = "The size of a batch with issues being sent to Space per request. Default: 50.",
+            transform = { toInt() }
+    ).default(50)
+
     private fun parseMapping(arg: String, separator: String = mappingSeparator): Pair<String, String> {
         val mapping = arg.split(separator)
         if (mapping.size != 2)

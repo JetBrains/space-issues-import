@@ -32,19 +32,21 @@ fun main(args: Array<String>) = mainBody {
                 }
 
                 SpaceUploader()
-                    .upload(
-                        server = spaceServer,
-                        token = spaceToken,
+                        .upload(
+                                server = spaceServer,
+                                token = spaceToken,
 
-                        issues = preprocessedIssues,
-                        projectIdentifier = spaceProject,
-                        importSource = importSource,
+                                issues = preprocessedIssues,
+                                projectIdentifier = spaceProject,
+                                importSource = importSource,
 
-                        assigneeMissingPolicy = assigneeMissingPolicy,
-                        statusMissingPolicy = statusMissingPolicy,
-                        onExistsPolicy = onExistsPolicy,
-                        dryRun = dryRun
-                    )
+                                assigneeMissingPolicy = assigneeMissingPolicy,
+                                statusMissingPolicy = statusMissingPolicy,
+                                onExistsPolicy = onExistsPolicy,
+                                dryRun = dryRun,
+
+                                batchSize = batchSize
+                        )
             } else {
                 logger.error("Failed to load issues from external system")
             }
