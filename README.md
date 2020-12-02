@@ -1,9 +1,9 @@
 # Import Issues into Space 🚀 
 ![](https://jb.gg/badges/incubator-flat-square.svg)
 
-This script imports basic issues information (summary, description, assignee, status) from external systems into JetBrains Space, see the list and examples below.
+This script imports basic issue data (summary, description, assignee, status) from an external system into JetBrains Space, see the list and examples below.
 
-Full documentation is here.
+Here you can find a list of supported import sources and sample code.
 
 ## From YouTrack
 ```
@@ -34,55 +34,67 @@ usage: [-h] --youtrackServer YOUTRACKSERVER --youtrackQuery YOUTRACKQUERY
        [-s STATUS]...
 
 required arguments:
-  --youtrackServer YOUTRACKSERVER   URL of a YouTrack server to import issues
-                                    from
+  --youtrackServer YOUTRACKSERVER   The URL of the YouTrack server that you
+                                    want to import issues from.
 
-  --youtrackQuery YOUTRACKQUERY     a query to select issues from YouTrack
-                                    server
+  --youtrackQuery YOUTRACKQUERY     A query that selects the YouTrack issues
+                                    that you want to import.
 
-  --spaceServer SPACESERVER         URL of a Space server to operate on
+  --spaceServer SPACESERVER         The URL of the Space instance that you
+                                    want to import into.
 
-  --spaceToken SPACETOKEN           Personal Token with Import Issues
-                                    permission of a Space server
+  --spaceToken SPACETOKEN           A personal token for a Space account that
+                                    has the Import Issues permission.
 
-  --spaceProject SPACEPROJECT       The key or ID of a project in Space to
-                                    import issues into. E.g. key::ABC or
-                                    id::42
+  --spaceProject SPACEPROJECT       The key or ID of a project in Space into
+                                    which you want to import issues. For
+                                    example, key::ABC or id::42.
 
 
 optional arguments:
   -h, --help                        show this help message and exit
 
-  --youtrackToken YOUTRACKTOKEN     YouTrack token to access server;
-                                    will fetch issues as a guest otherwise
+  --youtrackToken YOUTRACKTOKEN     YouTrack token to access server; will
+                                    fetch issues as a guest otherwise.
 
-  --importSource IMPORTSOURCE       Import source name
+  --importSource IMPORTSOURCE       The name of the import source. Default:
+                                    YouTrack
 
-  --dryRun                          tell Space to run import without actually
-                                    creating issues
+  --dryRun                          Runs the import script without actually
+                                    creating issues.
 
-  --updateExistingIssues,           tell Space what should be done when
-  --skipExistingIssues              issues match by external id
+  --updateExistingIssues,           Tells Space how to process issues when
+  --skipExistingIssues              their external IDs matches previously
+                                    imported issues in Space. Default:
+                                    skipExistingIssues
 
-  --replaceMissingStatus,           tell Space what should be done when it
-  --skipMissingStatus               does not have a status
+  --replaceMissingStatus,           Tells Space how to handle issues when the
+  --skipMissingStatus               value for the status field does not exist.
+                                    `replaceMissingStatus` sets it to the
+                                    first unresolved status. Default:
+                                    `skipMissingStatus`
 
-  --replaceMissingAssignee,         tell Space what should be done when it
-  --skipMissingAssignee             does not have a assignee
+  --replaceMissingAssignee,         Tells Space how to handle issues when the
+  --skipMissingAssignee             value for the assignee field does not
+                                    exist. `replaceMissingAssignee` sets it to
+                                    `unassigned`. Default:
+                                    `skipMissingAssignee`
 
-  -a ASSIGNEE, --assignee ASSIGNEE  map assignee from external system to Space
-                                    e.g. leonid.tolstoy::leo.tolstoy
+  -a ASSIGNEE, --assignee ASSIGNEE  Maps the assignee in the external system
+                                    to a member profile in Space. For example,
+                                    leonid.tolstoy::leo.tolstoy.
 
-  -s STATUS, --status STATUS        map status from external system to Space
-                                    e.g. in-progress::In Progress
+  -s STATUS, --status STATUS        Maps an issue status in the external
+                                    system to an issue status in Space. For
+                                    example, in-progress::In Progress.
 ```
 
-# Build and run locally
+# Build and Run Locally
 
 ## With Docker
 ```
 docker build . -t space-import-issues
-docker run space-import-issues --youtrackServer "https://youtrack.jetbrains.com" --youtrackQuery "project:SPACE module: UI #Unresolved" --youtrackToken "perm:token" --spaceServer "https://jetbrains.team" --spaceToken "sp:token" --spaceProjectId "key:MPR2"
+docker run space-import-issues --youtrackServer "https://youtrack.jetbrains.com" --youtrackQuery "project:SPACE module: UI #Unresolved" --youtrackToken "perm:token" --spaceServer "https://jetbrains.team" --spaceToken "secret" --spaceProject "key::ABC"
 ```
 
 ## Without Docker

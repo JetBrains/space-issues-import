@@ -11,85 +11,85 @@ data class CommandLineArgs(private val parser: ArgParser) {
     private val mappingSeparator = "::"
 
     val youtrackServer by parser.storing(
-        "--youtrackServer",
-        help = "URL of a YouTrack server to import issues from"
+            "--youtrackServer",
+            help = "The URL of the YouTrack server that you want to import issues from."
     )
 
     val youtrackQuery by parser.storing(
-        "--youtrackQuery",
-        help = "a query to select issues from YouTrack server"
+            "--youtrackQuery",
+            help = "A query that selects the YouTrack issues that you want to import."
     )
 
     val youtrackToken by parser.storing(
-        "--youtrackToken",
-        help = "YouTrack token to access server; will fetch issues as a guest otherwise"
+            "--youtrackToken",
+            help = "YouTrack token to access server; will fetch issues as a guest otherwise."
     ).default(null)
 
     val spaceServer by parser.storing(
-        "--spaceServer",
-        help = "URL of a Space server to operate on"
+            "--spaceServer",
+            help = "The URL of the Space instance that you want to import into."
     )
 
     val spaceToken by parser.storing(
-        "--spaceToken",
-        help = "Personal Token with Import Issues permission of a Space server"
+            "--spaceToken",
+            help = "A personal token for a Space account that has the Import Issues permission."
     )
 
     val spaceProject by parser.storing(
-        "--spaceProject",
-        help = "The key or ID of a project in Space to import issues into. E.g. key${mappingSeparator}ABC or id${mappingSeparator}42",
-        transform = {
-            val (identifierType, identifier) = parseMapping(this)
-            when (identifierType.toLowerCase()) {
-                "key" -> ProjectIdentifier.Key(identifier)
-                "id" -> ProjectIdentifier.Key(identifier)
-                else -> throw SystemExitException("only key::value or id::value are allowed for --spaceProject as identifier", 2)
+            "--spaceProject",
+            help = "The key or ID of a project in Space into which you want to import issues. For example, key${mappingSeparator}ABC or id${mappingSeparator}42.",
+            transform = {
+                val (identifierType, identifier) = parseMapping(this)
+                when (identifierType.toLowerCase()) {
+                    "key" -> ProjectIdentifier.Key(identifier)
+                    "id" -> ProjectIdentifier.Key(identifier)
+                    else -> throw SystemExitException("only key::value or id::value are allowed for --spaceProject as identifier", 2)
+                }
             }
-        }
     )
 
     // Space /import API arguments
 
     val importSource by parser.storing(
-        "--importSource",
-        help = "Import source name"
+            "--importSource",
+            help = "The name of the import source. Default: YouTrack"
     ).default("YouTrack")
 
     val dryRun by parser.flagging(
-        "--dryRun",
-        help = "tell Space to run import without actually creating issues"
+            "--dryRun",
+            help = "Runs the import script without actually creating issues."
     )
 
     val onExistsPolicy by parser.mapping(
-        "--updateExistingIssues" to ImportExistsPolicy.Update,
-        "--skipExistingIssues" to ImportExistsPolicy.Skip,
-        help = "tell Space what should be done when issues match by external id"
+            "--updateExistingIssues" to ImportExistsPolicy.Update,
+            "--skipExistingIssues" to ImportExistsPolicy.Skip,
+            help = "Tells Space how to process issues when their external IDs matches previously imported issues in Space. Default: skipExistingIssues"
     ).default(ImportExistsPolicy.Skip)
 
     val statusMissingPolicy by parser.mapping(
-        "--replaceMissingStatus" to ImportMissingPolicy.ReplaceWithDefault,
-        "--skipMissingStatus" to ImportMissingPolicy.Skip,
-        help = "tell Space what should be done when it does not have a status"
+            "--replaceMissingStatus" to ImportMissingPolicy.ReplaceWithDefault,
+            "--skipMissingStatus" to ImportMissingPolicy.Skip,
+            help = "Tells Space how to handle issues when the value for the status field does not exist. `replaceMissingStatus` sets it to the first unresolved status. Default: `skipMissingStatus`"
     ).default(ImportMissingPolicy.Skip)
 
     val assigneeMissingPolicy by parser.mapping(
-        "--replaceMissingAssignee" to ImportMissingPolicy.ReplaceWithDefault,
-        "--skipMissingAssignee" to ImportMissingPolicy.Skip,
-        help = "tell Space what should be done when it does not have a assignee"
+            "--replaceMissingAssignee" to ImportMissingPolicy.ReplaceWithDefault,
+            "--skipMissingAssignee" to ImportMissingPolicy.Skip,
+            help = "Tells Space how to handle issues when the value for the assignee field does not exist. `replaceMissingAssignee` sets it to `unassigned`. Default: `skipMissingAssignee`"
     ).default(ImportMissingPolicy.Skip)
 
     // add-ons
 
     val assigneeMapping by parser.adding(
-        "-a", "--assignee",
-        help = "map assignee from external system to Space e.g. leonid.tolstoy${mappingSeparator}leo.tolstoy",
-        transform = { parseMapping(this) }
+            "-a", "--assignee",
+            help = "Maps the assignee in the external system to a member profile in Space. For example, leonid.tolstoy${mappingSeparator}leo.tolstoy.",
+            transform = { parseMapping(this) }
     ).default(emptyList())
 
     val statusMapping by parser.adding(
-        "-s", "--status",
-        help = "map status from external system to Space e.g. in-progress${mappingSeparator}In Progress",
-        transform = { parseMapping(this) }
+            "-s", "--status",
+            help = "Maps an issue status in the external system to an issue status in Space. For example, in-progress${mappingSeparator}In Progress.",
+            transform = { parseMapping(this) }
     ).default(emptyList())
 
     private fun parseMapping(arg: String, separator: String = mappingSeparator): Pair<String, String> {
