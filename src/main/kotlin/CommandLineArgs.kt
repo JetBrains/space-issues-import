@@ -22,7 +22,8 @@ data class CommandLineArgs(private val parser: ArgParser) {
 
     val youtrackToken by parser.storing(
             "--youtrackToken",
-            help = "YouTrack token to access server; will fetch issues as a guest otherwise."
+            help = "An optional permanent token that grants access to the YouTrack server for a specific user account. " +
+                    "If not specified, issue data is retrieved according to the access rights that are available to the guest account."
     ).default(null)
 
     val spaceServer by parser.storing(

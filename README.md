@@ -54,8 +54,12 @@ required arguments:
 optional arguments:
   -h, --help                        show this help message and exit
 
-  --youtrackToken YOUTRACKTOKEN     YouTrack token to access server; will
-                                    fetch issues as a guest otherwise.
+  --youtrackToken YOUTRACKTOKEN     An optional permanent token that grants
+                                    access to the YouTrack server for a
+                                    specific user account. If not specified,
+                                    issue data is retrieved according to the
+                                    access rights that are available to the
+                                    guest account.
 
   --importSource IMPORTSOURCE       The name of the import source. Default:
                                     YouTrack
