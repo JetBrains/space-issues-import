@@ -53,7 +53,7 @@ data class CommandLineArgs(private val parser: ArgParser) {
 
     val importSource by parser.storing(
             "--importSource",
-            help = "The name of the import source. Default: YouTrack"
+            help = "The name of the import source. Default: YouTrack."
     ).default("YouTrack")
 
     val dryRun by parser.flagging(
@@ -64,19 +64,19 @@ data class CommandLineArgs(private val parser: ArgParser) {
     val onExistsPolicy by parser.mapping(
             "--updateExistingIssues" to ImportExistsPolicy.Update,
             "--skipExistingIssues" to ImportExistsPolicy.Skip,
-            help = "Tells Space how to process issues when their external IDs matches previously imported issues in Space. Default: skipExistingIssues"
+            help = "Tells Space how to process issues when their external IDs matches previously imported issues in Space. Default: skipExistingIssues."
     ).default(ImportExistsPolicy.Skip)
 
     val statusMissingPolicy by parser.mapping(
             "--replaceMissingStatus" to ImportMissingPolicy.ReplaceWithDefault,
             "--skipMissingStatus" to ImportMissingPolicy.Skip,
-            help = "Tells Space how to handle issues when the value for the status field does not exist. `replaceMissingStatus` sets it to the first unresolved status. Default: `skipMissingStatus`"
+            help = "Tells Space how to handle issues when the value for the status field does not exist. `replaceMissingStatus` sets it to the first unresolved status. Default: `skipMissingStatus`."
     ).default(ImportMissingPolicy.Skip)
 
     val assigneeMissingPolicy by parser.mapping(
             "--replaceMissingAssignee" to ImportMissingPolicy.ReplaceWithDefault,
             "--skipMissingAssignee" to ImportMissingPolicy.Skip,
-            help = "Tells Space how to handle issues when the value for the assignee field does not exist. `replaceMissingAssignee` sets it to `unassigned`. Default: `skipMissingAssignee`"
+            help = "Tells Space how to handle issues when the value for the assignee field does not exist. `replaceMissingAssignee` sets it to `unassigned`. Default: `skipMissingAssignee`."
     ).default(ImportMissingPolicy.Skip)
 
     // add-ons
