@@ -1,14 +1,26 @@
 package com.jetbrains.space.import
 
+import com.atlassian.jira.rest.client.auth.AnonymousAuthenticationHandler
+import com.atlassian.jira.rest.client.auth.BasicHttpAuthenticationHandler
+import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClientFactory
 import com.jetbrains.space.import.common.IssuesLoadResult
+import com.jetbrains.space.import.jira.JiraIssuesLoaderFactory
 import com.jetbrains.space.import.space.SpaceUploader
 import com.jetbrains.space.import.youtrack.YoutrackIssuesLoaderFactory
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.mainBody
+import io.ktor.client.*
+import io.ktor.client.engine.apache.*
 import io.ktor.util.*
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
+import space.jetbrains.api.runtime.SpaceHttpClient
+import space.jetbrains.api.runtime.resources.projects
 import space.jetbrains.api.runtime.types.ExternalIssue
+import space.jetbrains.api.runtime.types.IssuesSorting
+import space.jetbrains.api.runtime.types.ProjectIdentifier
+import space.jetbrains.api.runtime.withPermanentToken
+import java.net.URI
 
 
 @InternalAPI
@@ -20,8 +32,7 @@ fun main(args: Array<String>) = mainBody {
         val statusMapping = statusMapping.toMap()
 
         runBlocking {
-            val loader = YoutrackIssuesLoaderFactory.create(youtrackServer, youtrackToken)
-            val result = loader.load(youtrackQuery)
+            val result = loadIssues()
 
             if (result is IssuesLoadResult.Success) {
                 // Preprocess issues: replace assignees and statuses according to the arguments
@@ -32,28 +43,56 @@ fun main(args: Array<String>) = mainBody {
                 }
 
                 SpaceUploader()
-                        .upload(
-                                server = spaceServer,
-                                token = spaceToken,
+                    .upload(
+                        server = spaceServer,
+                        token = spaceToken,
 
-                                issues = preprocessedIssues,
-                                projectIdentifier = spaceProject,
-                                importSource = importSource,
+                        issues = preprocessedIssues,
+                        projectIdentifier = spaceProject,
+                        importSource = importSource,
 
-                                assigneeMissingPolicy = assigneeMissingPolicy,
-                                statusMissingPolicy = statusMissingPolicy,
-                                onExistsPolicy = onExistsPolicy,
-                                dryRun = dryRun,
+                        assigneeMissingPolicy = assigneeMissingPolicy,
+                        statusMissingPolicy = statusMissingPolicy,
+                        onExistsPolicy = onExistsPolicy,
+                        dryRun = dryRun,
 
-                                batchSize = batchSize
-                        )
+                        batchSize = batchSize
+                    )
             } else {
-                logger.error("Failed to load issues from external system")
+                logger.error("Failed to loadIssues issues from external system")
             }
         }
     }
 }
 
+private suspend fun CommandLineArgs.loadIssues(): IssuesLoadResult {
+    val (loader, query) = when (importSource) {
+        "Jira" -> {
+            val jiraUrl = jiraServer
+            requireNotNull(jiraUrl, { IllegalArgumentException("jiraServer must be specified") })
+            JiraIssuesLoaderFactory.create(jiraUrl, jiraUser, jiraPassword) to (jiraQuery ?: "")
+        }
+        else -> {
+            val youtrackServer = youtrackServer
+            requireNotNull(
+                youtrackServer,
+                { IllegalArgumentException("youtrackServer must be specified") })
+            YoutrackIssuesLoaderFactory.create(youtrackServer, youtrackToken) to (youtrackQuery
+                ?: "")
+        }
+    }
+
+    return loader.load(query)
+}
+
 private fun ExternalIssue.copy(status: String, assignee: String?): ExternalIssue {
-    return ExternalIssue(summary, description, status, assignee, externalId, externalName, externalUrl)
+    return ExternalIssue(
+        summary,
+        description,
+        status,
+        assignee,
+        externalId,
+        externalName,
+        externalUrl
+    )
 }

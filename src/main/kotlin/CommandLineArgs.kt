@@ -10,15 +10,36 @@ import space.jetbrains.api.runtime.types.ProjectIdentifier
 data class CommandLineArgs(private val parser: ArgParser) {
     private val mappingSeparator = "::"
 
+    // Jira
+    val jiraServer by parser.storing(
+        "--jiraServer",
+        help = "The URL of the YouTrack server that you want to import issues from"
+    ).default(null)
+
+    val jiraQuery by parser.storing(
+        "--jiraQuery",
+        help = "A JQL query that selects the Jira issues you want to import"
+    ).default(null)
+
+    val jiraUser by parser.storing(
+        "--jiraUser",
+        help = "An optional user name to use to login to Jira"
+    ).default(null)
+
+    val jiraPassword by parser.storing(
+        "--jiraPassword",
+        help = "An optional password to use to login to Jira"
+    ).default(null)
+
     val youtrackServer by parser.storing(
             "--youtrackServer",
             help = "The URL of the YouTrack server that you want to import issues from."
-    )
+    ).default(null)
 
     val youtrackQuery by parser.storing(
             "--youtrackQuery",
             help = "A query that selects the YouTrack issues that you want to import."
-    )
+    ).default(null)
 
     val youtrackToken by parser.storing(
             "--youtrackToken",
