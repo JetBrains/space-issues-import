@@ -1,5 +1,5 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.4.10'
+    id 'org.jetbrains.kotlin.jvm' version '1.4.21'
 }
 
 group 'com.jetbrains.space-issues-import'
@@ -13,10 +13,12 @@ repositories {
     maven { url "https://kotlin.bintray.com/kotlinx/" }
     maven { url 'https://jitpack.io' }
     maven { url "https://maven.pkg.jetbrains.space/public/p/space-sdk/maven" }
+    maven { url "https://packages.atlassian.com/public/"}
 }
 
 def space_sdk_version = '60243-beta'
 def youtrack_rest_client_version = '0.2.11'
+def jira_rest_client_version = '5.2.2'
 def kotlinx_coroutines_version = '1.3.8'
 def ktor_client_apache_version = '1.3.2'
 def kotlin_argparser_version = '2.0.7'
@@ -28,6 +30,8 @@ dependencies {
     implementation "io.ktor:ktor-client-apache:$ktor_client_apache_version"
 
     implementation "org.jetbrains.youtrack:youtrack-rest-client:$youtrack_rest_client_version"
+    implementation "com.atlassian.jira:jira-rest-java-client-core:$jira_rest_client_version"
+    implementation 'io.atlassian.fugue:fugue:4.7.2'
     implementation "ch.qos.logback:logback-classic:$logback_version"
     implementation 'io.github.microutils:kotlin-logging:1.12.0'
 
