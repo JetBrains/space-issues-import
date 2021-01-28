@@ -30,15 +30,17 @@ class SpaceUploader {
         val httpClient = createHttpClient()
         val spaceClient = SpaceHttpClient(httpClient).withPermanentToken(token, server)
 
+        if (dryRun) logger.info("[DRY RUN]")
+
         issues.chunked(batchSize).forEach { issuesBatched ->
             val response = spaceClient.projects.planning.issues.importIssues(
-                    project = projectIdentifier,
-                    metadata = ImportMetadata(importSource),
-                    issues = issuesBatched,
-                    assigneeMissingPolicy = assigneeMissingPolicy,
-                    statusMissingPolicy = statusMissingPolicy,
-                    onExistsPolicy = onExistsPolicy,
-                    dryRun = dryRun
+                project = projectIdentifier,
+                metadata = ImportMetadata(importSource),
+                issues = issuesBatched,
+                assigneeMissingPolicy = assigneeMissingPolicy,
+                statusMissingPolicy = statusMissingPolicy,
+                onExistsPolicy = onExistsPolicy,
+                dryRun = dryRun
             )
             logger.info(response.message)
         }

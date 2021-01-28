@@ -10,30 +10,56 @@ import space.jetbrains.api.runtime.types.ProjectIdentifier
 data class CommandLineArgs(private val parser: ArgParser) {
     private val mappingSeparator = "::"
 
-    val youtrackServer by parser.storing(
-            "--youtrackServer",
-            help = "The URL of the YouTrack server that you want to import issues from."
-    )
+    // Jira
 
-    val youtrackQuery by parser.storing(
-            "--youtrackQuery",
-            help = "A query that selects the YouTrack issues that you want to import."
-    )
-
-    val youtrackToken by parser.storing(
-            "--youtrackToken",
-            help = "An optional permanent token that grants access to the YouTrack server for a specific user account. " +
-                    "If not specified, issue data is retrieved according to the access rights that are available to the guest account."
+    val jiraServer by parser.storing(
+        "--jiraServer",
+        help = "The URL of the Jira server that you want to import issues from"
     ).default(null)
 
+    val jiraQuery by parser.storing(
+        "--jiraQuery",
+        help = "A JQL query that selects the Jira issues you want to import"
+    ).default(null)
+
+    val jiraUser by parser.storing(
+        "--jiraUser",
+        help = "An optional user name to use to login to Jira"
+    ).default(null)
+
+    val jiraPassword by parser.storing(
+        "--jiraPassword",
+        help = "An optional password to use to login to Jira"
+    ).default(null)
+
+    // YouTrack
+
+    val youtrackServer by parser.storing(
+        "--youtrackServer",
+        help = "The URL of the YouTrack server that you want to import issues from."
+    ).default(null)
+
+    val youtrackQuery by parser.storing(
+        "--youtrackQuery",
+        help = "A query that selects the YouTrack issues that you want to import."
+    ).default(null)
+
+    val youtrackToken by parser.storing(
+        "--youtrackToken",
+        help = "An optional permanent token that grants access to the YouTrack server for a specific user account. " +
+                "If not specified, issue data is retrieved according to the access rights that are available to the guest account."
+    ).default(null)
+
+    // Space
+
     val spaceServer by parser.storing(
-            "--spaceServer",
-            help = "The URL of the Space instance that you want to import into."
+        "--spaceServer",
+        help = "The URL of the Space instance that you want to import into."
     )
 
     val spaceToken by parser.storing(
-            "--spaceToken",
-            help = "A personal token for a Space account that has the Import Issues permission."
+        "--spaceToken",
+        help = "A personal token for a Space account that has the Import Issues permission."
     )
 
     val spaceProject by parser.storing(
@@ -52,9 +78,9 @@ data class CommandLineArgs(private val parser: ArgParser) {
     // Space /import API arguments
 
     val importSource by parser.storing(
-            "--importSource",
-            help = "The name of the import source. Default: YouTrack."
-    ).default("YouTrack")
+        "--importSource",
+        help = "The name of the import source. Default: External."
+    ).default("External")
 
     val dryRun by parser.flagging(
             "--dryRun",

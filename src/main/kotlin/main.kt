@@ -1,6 +1,7 @@
 package com.jetbrains.space.import
 
 import com.jetbrains.space.import.common.IssuesLoadResult
+import com.jetbrains.space.import.jira.JiraIssuesLoaderFactory
 import com.jetbrains.space.import.space.SpaceUploader
 import com.jetbrains.space.import.youtrack.YoutrackIssuesLoaderFactory
 import com.xenomachina.argparser.ArgParser
@@ -20,8 +21,7 @@ fun main(args: Array<String>) = mainBody {
         val statusMapping = statusMapping.toMap()
 
         runBlocking {
-            val loader = YoutrackIssuesLoaderFactory.create(youtrackServer, youtrackToken)
-            val result = loader.load(youtrackQuery)
+            val result = loadIssues()
 
             if (result is IssuesLoadResult.Success) {
                 // Preprocess issues: replace assignees and statuses according to the arguments
@@ -32,28 +32,57 @@ fun main(args: Array<String>) = mainBody {
                 }
 
                 SpaceUploader()
-                        .upload(
-                                server = spaceServer,
-                                token = spaceToken,
+                    .upload(
+                        server = spaceServer,
+                        token = spaceToken,
 
-                                issues = preprocessedIssues,
-                                projectIdentifier = spaceProject,
-                                importSource = importSource,
+                        issues = preprocessedIssues,
+                        projectIdentifier = spaceProject,
+                        importSource = importSource,
 
-                                assigneeMissingPolicy = assigneeMissingPolicy,
-                                statusMissingPolicy = statusMissingPolicy,
-                                onExistsPolicy = onExistsPolicy,
-                                dryRun = dryRun,
+                        assigneeMissingPolicy = assigneeMissingPolicy,
+                        statusMissingPolicy = statusMissingPolicy,
+                        onExistsPolicy = onExistsPolicy,
+                        dryRun = dryRun,
 
-                                batchSize = batchSize
-                        )
+                        batchSize = batchSize
+                    )
+                logger.info("Finished")
             } else {
-                logger.error("Failed to load issues from external system")
+                logger.error("Failed to loadIssues issues from external system")
             }
         }
     }
 }
 
+private suspend fun CommandLineArgs.loadIssues(): IssuesLoadResult {
+    val (loader, query) = when (importSource) {
+        "Jira" -> {
+            val jiraUrl = jiraServer
+            requireNotNull(jiraUrl, { IllegalArgumentException("jiraServer must be specified") })
+            JiraIssuesLoaderFactory.create(jiraUrl, jiraUser, jiraPassword) to (jiraQuery ?: "")
+        }
+        else -> {
+            val youtrackServer = youtrackServer
+            requireNotNull(
+                youtrackServer,
+                { IllegalArgumentException("youtrackServer must be specified") })
+            YoutrackIssuesLoaderFactory.create(youtrackServer, youtrackToken) to (youtrackQuery
+                ?: "")
+        }
+    }
+
+    return loader.load(query)
+}
+
 private fun ExternalIssue.copy(status: String, assignee: String?): ExternalIssue {
-    return ExternalIssue(summary, description, status, assignee, externalId, externalName, externalUrl)
+    return ExternalIssue(
+        summary,
+        description,
+        status,
+        assignee,
+        externalId,
+        externalName,
+        externalUrl
+    )
 }
