@@ -8,9 +8,9 @@ Here you can find a list of supported import sources and sample code.
 ## From YouTrack
 ```
 $ docker run public.registry.jetbrains.space/p/space/containers/space-issues-import:latest 
-         --youtrackServer https://youtrack.jetbrains.com 
+         --youtrackServer https://<domain>.myjetbrains.com/youtrack
          --youtrackQuery "project:SPACE module: UI #Unresolved" 
-         --spaceServer http://jetbrains.team 
+         --spaceServer http://<domain>.jetbrains.space 
          --spaceToken SECRET 
          --spaceProject key::ABC 
          -a "Leo Tolstoy::leonid.tolstoy" 
@@ -25,54 +25,22 @@ $ docker run public.registry.jetbrains.space/p/space/containers/space-issues-imp
 `In progress`
 
 ## From Jira
-```
-docker run public.registry.jetbrains.space/p/space/containers/space-issues-import:latest 
-         --jiraServer https://<company>.atlassian.net 
-         --jiraQuery "project = Test"
-         --jiraUser jira-user 
-         --jiraPassword jira-user-password 
-         --spaceServer http://jetbrains.team 
-         --spaceToken SECRET 
-         --spaceProject key::ABC 
-         -a "Leo Tolstoy::leonid.tolstoy" 
-         -s "in design::In-Design" 
-         -s "open::In-Design" 
-         --importSource Jira
-         --updateExistingIssues 
-         --replaceMissingStatus 
-         --replaceMissingAssignee
-```
+
+`In progress`
 
 # Arguments
+
 ```
-usage: [-h] --jiraUrl JIRAURL --jiraQuery JIRAQUERY --jiraUser JIRAUSER
-       --jiraPassword JIRAPASSWORD --youtrackServer YOUTRACKSERVER
-       --youtrackQuery YOUTRACKQUERY [--youtrackToken YOUTRACKTOKEN]
-       --spaceServer SPACESERVER --spaceToken SPACETOKEN
-       --spaceProject SPACEPROJECT [--importSource IMPORTSOURCE] [--dryRun]
-       [--updateExistingIssues] [--replaceMissingStatus]
-       [--replaceMissingAssignee] [-a ASSIGNEE]... [-s STATUS]...
-       [--batchSize BATCHSIZE]
+usage: [-h] [--jiraServer JIRASERVER] [--jiraQuery JIRAQUERY]
+       [--jiraUser JIRAUSER] [--jiraPassword JIRAPASSWORD]
+       [--youtrackServer YOUTRACKSERVER] [--youtrackQuery YOUTRACKQUERY]
+       [--youtrackToken YOUTRACKTOKEN] --spaceServer SPACESERVER
+       --spaceToken SPACETOKEN --spaceProject SPACEPROJECT
+       [--importSource IMPORTSOURCE] [--dryRun] [--updateExistingIssues]
+       [--replaceMissingStatus] [--replaceMissingAssignee] [-a ASSIGNEE]...
+       [-s STATUS]... [--batchSize BATCHSIZE]
 
 required arguments:
-  --jiraUrl JIRAURL                 The URL of the YouTrack server that you
-                                    want to import issues from
-
-  --jiraQuery JIRAQUERY             A JQL query that selects the Jira issues
-                                    you want to import
-
-  --jiraUser JIRAUSER               An optional user name to use to login to
-                                    Jira
-
-  --jiraPassword JIRAPASSWORD       An optional password to use to login to
-                                    Jira
-
-  --youtrackServer YOUTRACKSERVER   The URL of the YouTrack server that you
-                                    want to import issues from.
-
-  --youtrackQuery YOUTRACKQUERY     A query that selects the YouTrack issues
-                                    that you want to import.
-
   --spaceServer SPACESERVER         The URL of the Space instance that you
                                     want to import into.
 
@@ -87,6 +55,26 @@ required arguments:
 optional arguments:
   -h, --help                        show this help message and exit
 
+  --jiraServer JIRASERVER           The URL of the Jira server that you want
+                                    to import issues from
+
+  --jiraQuery JIRAQUERY             A JQL query that selects the Jira issues
+                                    you want to import
+
+  --jiraUser JIRAUSER               An optional user name to use to login to
+                                    Jira
+
+  --jiraPassword JIRAPASSWORD       An optional password to use to login to
+                                    Jira
+
+  --youtrackServer YOUTRACKSERVER   The URL of the YouTrack server that you
+                                    want to import issues from. Must match the one from YT Domain Settings.
+                                    Typically, should end with /youtrack:
+                                    https://<domain>.myjetbrains.com/youtrack
+
+  --youtrackQuery YOUTRACKQUERY     A query that selects the YouTrack issues
+                                    that you want to import.
+
   --youtrackToken YOUTRACKTOKEN     An optional permanent token that grants
                                     access to the YouTrack server for a
                                     specific user account. If not specified,
@@ -95,7 +83,7 @@ optional arguments:
                                     guest account.
 
   --importSource IMPORTSOURCE       The name of the import source. Default:
-                                    YouTrack.
+                                    External.
 
   --dryRun                          Runs the import script without actually
                                     creating issues.
