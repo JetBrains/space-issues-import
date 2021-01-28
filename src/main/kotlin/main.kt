@@ -1,26 +1,15 @@
 package com.jetbrains.space.import
 
-import com.atlassian.jira.rest.client.auth.AnonymousAuthenticationHandler
-import com.atlassian.jira.rest.client.auth.BasicHttpAuthenticationHandler
-import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClientFactory
 import com.jetbrains.space.import.common.IssuesLoadResult
 import com.jetbrains.space.import.jira.JiraIssuesLoaderFactory
 import com.jetbrains.space.import.space.SpaceUploader
 import com.jetbrains.space.import.youtrack.YoutrackIssuesLoaderFactory
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.mainBody
-import io.ktor.client.*
-import io.ktor.client.engine.apache.*
 import io.ktor.util.*
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
-import space.jetbrains.api.runtime.SpaceHttpClient
-import space.jetbrains.api.runtime.resources.projects
 import space.jetbrains.api.runtime.types.ExternalIssue
-import space.jetbrains.api.runtime.types.IssuesSorting
-import space.jetbrains.api.runtime.types.ProjectIdentifier
-import space.jetbrains.api.runtime.withPermanentToken
-import java.net.URI
 
 
 @InternalAPI
@@ -58,6 +47,7 @@ fun main(args: Array<String>) = mainBody {
 
                         batchSize = batchSize
                     )
+                logger.info("Finished")
             } else {
                 logger.error("Failed to loadIssues issues from external system")
             }
