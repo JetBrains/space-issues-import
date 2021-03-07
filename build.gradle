@@ -16,8 +16,8 @@ repositories {
     maven { url "https://packages.atlassian.com/public/"}
 }
 
-def space_sdk_version = '60243-beta'
-def youtrack_rest_client_version = '0.2.16'
+def space_sdk_version = '65553-beta'
+def youtrack_rest_client_version = '0.2.17'
 def jira_rest_client_version = '5.2.2'
 
 def kotlinx_coroutines_version = '1.3.8'
