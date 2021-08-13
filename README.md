@@ -10,7 +10,7 @@ Here you can find a list of supported import sources and sample code.
 $ docker run public.registry.jetbrains.space/p/space/containers/space-issues-import:latest 
          --youtrackServer https://<domain>.myjetbrains.com/youtrack
          --youtrackQuery "project:SPACE module: UI #Unresolved" 
-         --spaceServer http://<domain>.jetbrains.space 
+         --spaceServer https://<domain>.jetbrains.space 
          --spaceToken SECRET 
          --spaceProject key::ABC 
          -a "Leo Tolstoy::leonid.tolstoy" 
