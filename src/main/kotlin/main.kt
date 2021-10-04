@@ -17,6 +17,10 @@ fun main(args: Array<String>) = mainBody {
     CommandLineArgs(ArgParser(args)).run {
         val logger = LoggerFactory.getLogger(this.javaClass)
 
+        if (debug) {
+            logger.info("Running in debug mode")
+        }
+
         val assigneeMapping = assigneeMapping.toMap()
         val statusMapping = statusMapping.toMap()
 
@@ -46,7 +50,9 @@ fun main(args: Array<String>) = mainBody {
                         onExistsPolicy = onExistsPolicy,
                         dryRun = dryRun,
 
-                        batchSize = batchSize
+                        batchSize = batchSize,
+
+                        debug = debug,
                     )
                 logger.info("Finished")
             } else {

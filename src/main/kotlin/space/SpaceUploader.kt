@@ -2,6 +2,7 @@ package com.jetbrains.space.import.space
 
 import io.ktor.client.*
 import io.ktor.client.engine.apache.*
+import io.ktor.client.features.logging.*
 import io.ktor.util.*
 import org.slf4j.LoggerFactory
 import space.jetbrains.api.runtime.SpaceHttpClient
@@ -16,18 +17,32 @@ class SpaceUploader {
 
     @InternalAPI
     suspend fun upload(
-            server: String,
-            token: String,
-            issues: List<ExternalIssue>,
-            projectIdentifier: ProjectIdentifier,
-            importSource: String,
-            assigneeMissingPolicy: ImportMissingPolicy,
-            statusMissingPolicy: ImportMissingPolicy,
-            onExistsPolicy: ImportExistsPolicy,
-            dryRun: Boolean,
-            batchSize: Int
+        server: String,
+        token: String,
+        issues: List<ExternalIssue>,
+        projectIdentifier: ProjectIdentifier,
+        importSource: String,
+        assigneeMissingPolicy: ImportMissingPolicy,
+        statusMissingPolicy: ImportMissingPolicy,
+        onExistsPolicy: ImportExistsPolicy,
+        dryRun: Boolean,
+        batchSize: Int,
+        debug: Boolean,
     ) {
         val httpClient = createHttpClient()
+            .let {
+                if (debug) {
+                    it.config {
+                        install(Logging) {
+                            logger = Logger.DEFAULT
+                            level = LogLevel.ALL
+                        }
+                    }
+                } else {
+                    it
+                }
+            }
+
         val spaceClient = SpaceHttpClient(httpClient).withPermanentToken(token, server)
 
         if (dryRun) logger.info("[DRY RUN]")

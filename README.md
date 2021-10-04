@@ -116,7 +116,7 @@ optional arguments:
   --batchSize BATCHSIZE             The size of a batch with issues being sent
                                     to Space per request. Default: 50.
 
-
+  --debug                           Runs the import script in debug mode.
 ```
 # Build and Run Locally
 
