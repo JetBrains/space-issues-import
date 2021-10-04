@@ -115,15 +115,20 @@ data class CommandLineArgs(private val parser: ArgParser) {
 
     val statusMapping by parser.adding(
             "-s", "--status",
-            help = "Maps an issue status in the external system to an issue status in Space. For example, in-progress${mappingSeparator}In Progress.",
-            transform = { parseMapping(this) }
+        help = "Maps an issue status in the external system to an issue status in Space. For example, in-progress${mappingSeparator}In Progress.",
+        transform = { parseMapping(this) }
     ).default(emptyList())
 
     val batchSize by parser.storing(
-            "--batchSize",
-            help = "The size of a batch with issues being sent to Space per request. Default: 50.",
-            transform = { toInt() }
+        "--batchSize",
+        help = "The size of a batch with issues being sent to Space per request. Default: 50.",
+        transform = { toInt() }
     ).default(50)
+
+    val debug by parser.flagging(
+        "--debug",
+        help = "Runs the import script in debug mode."
+    )
 
     private fun parseMapping(arg: String, separator: String = mappingSeparator): Pair<String, String> {
         val mapping = arg.split(separator)
