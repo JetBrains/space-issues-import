@@ -25,11 +25,12 @@ fun main(args: Array<String>) = mainBody {
 
             if (result is IssuesLoadResult.Success) {
                 // Preprocess issues: replace assignees and statuses according to the arguments
-                val preprocessedIssues = result.issues.map {
-                    val assignee = assigneeMapping[it.assignee] ?: it.assignee
-                    val status = statusMapping[it.status] ?: it.status
-                    it.copy(assignee = assignee, status = status)
-                }
+                val preprocessedIssues = result.issues
+                    .map {
+                        val assignee = assigneeMapping[it.assignee] ?: it.assignee
+                        val status = statusMapping[it.status] ?: it.status
+                        it.copy(assignee = assignee, status = status)
+                    }
 
                 SpaceUploader()
                     .upload(
@@ -49,7 +50,7 @@ fun main(args: Array<String>) = mainBody {
                     )
                 logger.info("Finished")
             } else {
-                logger.error("Failed to loadIssues issues from external system")
+                logger.error("Failed to load issues from external system")
             }
         }
     }
@@ -59,16 +60,18 @@ private suspend fun CommandLineArgs.loadIssues(): IssuesLoadResult {
     val (loader, query) = when (importSource) {
         "Jira" -> {
             val jiraUrl = jiraServer
-            requireNotNull(jiraUrl, { IllegalArgumentException("jiraServer must be specified") })
+            requireNotNull(jiraUrl) {
+                IllegalArgumentException("jiraServer must be specified")
+            }
             JiraIssuesLoaderFactory.create(jiraUrl, jiraUser, jiraPassword) to (jiraQuery ?: "")
         }
         else -> {
             val youtrackServer = youtrackServer
-            requireNotNull(
-                youtrackServer,
-                { IllegalArgumentException("youtrackServer must be specified") })
-            YoutrackIssuesLoaderFactory.create(youtrackServer, youtrackToken) to (youtrackQuery
-                ?: "")
+            requireNotNull(youtrackServer) {
+                IllegalArgumentException("youtrackServer must be specified")
+            }
+
+            YoutrackIssuesLoaderFactory.create(youtrackServer, youtrackToken) to (youtrackQuery ?: "")
         }
     }
 
