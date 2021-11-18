@@ -28,6 +28,33 @@ $ docker run public.registry.jetbrains.space/p/space/containers/space-issues-imp
 
 `In progress`
 
+## From Notion
+
+```
+$ docker run public.registry.jetbrains.space/p/space/containers/space-issues-import:latest 
+        --importSource Notion \
+        --notionToken SECRET \
+        --notionDatabaseId SECRET \
+        --notionAssigneeProperty name::Assignee \
+        --notionAssigneePropertyMappingType name \
+        --notionStatusProperty name::Status \
+        --notionStatusPropertyMappingType name \
+        --notionTagProperty name::Project \
+        --notionTagPropertyMappingType name \
+        --tagPropertyMappingType name \
+        --spaceServer "https://<domain>.jetbrains.space" \
+        --spaceToken SECRET \
+        --spaceProject key::ABC \
+        --spaceBoard name::Tasks \
+        --replaceMissingStatus \
+        --replaceMissingAssignee \
+        --assignee "John Doe::john.doe" \
+        --status "TODO::🔍 TODO" \
+        --status "Done::✅ Done" \
+        --tag "📱 Android::🤖 Android" \
+        --tag "🍏 iOS::🍏 iOS"
+```
+
 # Arguments
 
 ```
