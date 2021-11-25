@@ -28,17 +28,56 @@ $ docker run public.registry.jetbrains.space/p/space/containers/space-issues-imp
 
 `In progress`
 
+## From Notion
+
+```
+$ docker run public.registry.jetbrains.space/p/space/containers/space-issues-import:latest 
+        --importSource Notion \
+        --notionQuery "{\"filter\":{},\"sorts\":{},\"start_cursor\":\"\",\"page_size\":100}" \
+        --notionToken SECRET \
+        --notionDatabaseId SECRET \
+        --notionAssigneeProperty name::Assignee \
+        --notionAssigneePropertyMappingType name \
+        --notionStatusProperty name::Status \
+        --notionStatusPropertyMappingType name \
+        --notionTagProperty name::Project \
+        --notionTagPropertyMappingType name \
+        --tagPropertyMappingType name \
+        --spaceServer "https://<domain>.jetbrains.space" \
+        --spaceToken SECRET \
+        --spaceProject key::ABC \
+        --spaceBoard name::Tasks \
+        --replaceMissingStatus \
+        --replaceMissingAssignee \
+        --assignee "John Doe::john.doe" \
+        --status "TODO::🔍 TODO" \
+        --status "Done::✅ Done" \
+        --tag "📱 Android::🤖 Android" \
+        --tag "🍏 iOS::🍏 iOS"
+```
+
 # Arguments
 
 ```
 usage: [-h] [--jiraServer JIRASERVER] [--jiraQuery JIRAQUERY]
        [--jiraUser JIRAUSER] [--jiraPassword JIRAPASSWORD]
        [--youtrackServer YOUTRACKSERVER] [--youtrackQuery YOUTRACKQUERY]
-       [--youtrackToken YOUTRACKTOKEN] --spaceServer SPACESERVER
+       [--youtrackToken YOUTRACKTOKEN] [--notionDatabaseId NOTIONDATABASEID]
+       [--notionToken NOTIONTOKEN]
+       [--notionAssigneeProperty NOTIONASSIGNEEPROPERTY]
+       [--notionStatusProperty NOTIONSTATUSPROPERTY]
+       [--notionTagProperty NOTIONTAGPROPERTY]
+       [--notionAssigneePropertyMappingType NOTIONASSIGNEEPROPERTYMAPPINGTYPE]
+       [--notionStatusPropertyMappingType NOTIONSTATUSPROPERTYMAPPINGTYPE]
+       [--notionTagPropertyMappingType NOTIONTAGPROPERTYMAPPINGTYPE]
+       [--notionQuery NOTIONQUERY] --spaceServer SPACESERVER
        --spaceToken SPACETOKEN --spaceProject SPACEPROJECT
        [--importSource IMPORTSOURCE] [--dryRun] [--updateExistingIssues]
        [--replaceMissingStatus] [--replaceMissingAssignee] [-a ASSIGNEE]...
-       [-s STATUS]... [--batchSize BATCHSIZE]
+       [-s STATUS]... [--batchSize BATCHSIZE] [--debug]
+       [--spaceBoard SPACEBOARD] [-t TAG]...
+       [--tagPropertyMappingType TAGPROPERTYMAPPINGTYPE]
+
 
 required arguments:
   --spaceServer SPACESERVER         The URL of the Space instance that you

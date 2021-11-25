@@ -1,7 +1,10 @@
 package com.jetbrains.space.import
 
+import com.jetbrains.space.import.common.ImportSource
 import com.jetbrains.space.import.common.IssuesLoadResult
+import com.jetbrains.space.import.common.IssuesLoader
 import com.jetbrains.space.import.jira.JiraIssuesLoaderFactory
+import com.jetbrains.space.import.notion.NotionIssuesLoaderFactory
 import com.jetbrains.space.import.space.SpaceUploader
 import com.jetbrains.space.import.youtrack.YoutrackIssuesLoaderFactory
 import com.xenomachina.argparser.ArgParser
@@ -23,18 +26,24 @@ fun main(args: Array<String>) = mainBody {
 
         val assigneeMapping = assigneeMapping.toMap()
         val statusMapping = statusMapping.toMap()
+        val tagMapping = tagMapping.toMap()
 
         runBlocking {
-            val result = loadIssues()
+            val (loader, params) = getLoaderAndParams()
+            val issuesLoadResult = loader.load(params)
 
-            if (result is IssuesLoadResult.Success) {
+            if (issuesLoadResult is IssuesLoadResult.Success) {
                 // Preprocess issues: replace assignees and statuses according to the arguments
-                val preprocessedIssues = result.issues
+                val preprocessedIssues = issuesLoadResult.issues
                     .map {
                         val assignee = assigneeMapping[it.assignee] ?: it.assignee
                         val status = statusMapping[it.status] ?: it.status
                         it.copy(assignee = assignee, status = status)
                     }
+                val preprocessedTags = issuesLoadResult.tags.mapNotNull { (externalId, tags) ->
+                    (externalId to tags.mapNotNull(tagMapping::get).toSet())
+                        .takeIf { (_, tags) -> tags.isNotEmpty() }
+                }.toMap()
 
                 SpaceUploader()
                     .upload(
@@ -53,6 +62,9 @@ fun main(args: Array<String>) = mainBody {
                         batchSize = batchSize,
 
                         debug = debug,
+                        boardIdentifier = spaceBoard,
+                        tags = preprocessedTags,
+                        tagPropertyMappingType = tagPropertyMappingType,
                     )
                 logger.info("Finished")
             } else {
@@ -62,26 +74,60 @@ fun main(args: Array<String>) = mainBody {
     }
 }
 
-private suspend fun CommandLineArgs.loadIssues(): IssuesLoadResult {
+private fun CommandLineArgs.getLoaderAndParams(): Pair<IssuesLoader, IssuesLoader.Params> {
     val (loader, query) = when (importSource) {
-        "Jira" -> {
+        ImportSource.Jira -> {
             val jiraUrl = jiraServer
             requireNotNull(jiraUrl) {
                 IllegalArgumentException("jiraServer must be specified")
             }
-            JiraIssuesLoaderFactory.create(jiraUrl, jiraUser, jiraPassword) to (jiraQuery ?: "")
+            JiraIssuesLoaderFactory.create(jiraUrl, jiraUser, jiraPassword) to IssuesLoader.Params.Jira(jiraQuery ?: "")
         }
-        else -> {
+        ImportSource.Notion -> {
+            val notionDatabaseId = notionDatabaseId
+            val notionToken = notionToken
+            val notionAssigneeProperty = notionAssigneeProperty
+            val notionStatusProperty = notionStatusProperty
+            val notionTagProperty = notionTagProperty
+
+            requireNotNull(notionDatabaseId) {
+                IllegalArgumentException("notionDatabaseId must be specified")
+            }
+            requireNotNull(notionToken) {
+                IllegalArgumentException("notionToken must be specified")
+            }
+            requireNotNull(notionAssigneeProperty) {
+                IllegalArgumentException("notionAssigneeProperty must be specified")
+            }
+            requireNotNull(notionStatusProperty) {
+                IllegalArgumentException("notionStatusProperty must be specified")
+            }
+            requireNotNull(notionTagProperty) {
+                IllegalArgumentException("notionTagProperty must be specified")
+            }
+
+            NotionIssuesLoaderFactory.create(notionToken) to IssuesLoader.Params.Notion(
+                query = notionQuery.orEmpty(),
+                databaseId = notionDatabaseId,
+                assigneeProperty = notionAssigneeProperty,
+                assigneePropertyMappingType = notionAssigneePropertyMappingType,
+                statusProperty = notionStatusProperty,
+                statusPropertyMappingType = notionStatusPropertyMappingType,
+                tagProperty = notionTagProperty,
+                tagPropertyMappingType = notionTagPropertyMappingType,
+            )
+        }
+        ImportSource.YouTrack, ImportSource.External -> {
             val youtrackServer = youtrackServer
             requireNotNull(youtrackServer) {
                 IllegalArgumentException("youtrackServer must be specified")
             }
 
-            YoutrackIssuesLoaderFactory.create(youtrackServer, youtrackToken) to (youtrackQuery ?: "")
+            YoutrackIssuesLoaderFactory.create(youtrackServer, youtrackToken) to IssuesLoader.Params.YouTrack(youtrackQuery ?: "")
         }
     }
 
-    return loader.load(query)
+    return loader to query
 }
 
 private fun ExternalIssue.copy(status: String, assignee: String?): ExternalIssue {

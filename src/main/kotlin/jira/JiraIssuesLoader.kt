@@ -31,9 +31,9 @@ private class JiraIssuesLoader(private val jiraUrl: String, username: String?, p
         client = factory.createWithAuthenticationHandler(URI.create(jiraUrl), authHandler)
     }
 
-    override suspend fun load(query: String): IssuesLoadResult {
+    override suspend fun load(params: IssuesLoader.Params): IssuesLoadResult {
         return try {
-            migrate(query)
+            migrate(params.query)
         } catch (e: Exception) {
             LOG.error("Error whilst migrating issues", e)
             IssuesLoadResult.Failed(e.message ?: "Unknown exception")
@@ -68,7 +68,7 @@ private class JiraIssuesLoader(private val jiraUrl: String, username: String?, p
                 }
         } while (current < total)
 
-        return IssuesLoadResult.Success(allIssues.toList())
+        return IssuesLoadResult.Success(allIssues.toList(), emptyMap())
     }
 
     companion object {
