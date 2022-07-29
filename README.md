@@ -60,7 +60,7 @@ $ docker run public.registry.jetbrains.space/p/space/containers/space-issues-imp
 
 ```
 usage: [-h] [--jiraServer JIRASERVER] [--jiraQuery JIRAQUERY]
-       [--jiraUser JIRAUSER] [--jiraPassword JIRAPASSWORD]
+       [--jiraUser JIRAUSER] [--jiraApiToken JIRATOKEN]
        [--youtrackServer YOUTRACKSERVER] [--youtrackQuery YOUTRACKQUERY]
        [--youtrackToken YOUTRACKTOKEN] [--notionDatabaseId NOTIONDATABASEID]
        [--notionToken NOTIONTOKEN]
@@ -97,13 +97,13 @@ optional arguments:
   --jiraServer JIRASERVER           The URL of the Jira server that you want
                                     to import issues from
 
-  --jiraQuery JIRAQUERY             A JQL query that selects the Jira issues
+  --jiraQuery JIRAQUERY             An optional JQL query that selects the Jira issues
                                     you want to import
 
   --jiraUser JIRAUSER               An optional user name to use to login to
                                     Jira
 
-  --jiraPassword JIRAPASSWORD       An optional password to use to login to
+  --jiraApiToken JIRATOKEN          An optional API token to use to login to
                                     Jira
 
   --youtrackServer YOUTRACKSERVER   The URL of the YouTrack server that you

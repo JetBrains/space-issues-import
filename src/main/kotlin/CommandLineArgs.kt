@@ -24,7 +24,7 @@ data class CommandLineArgs(private val parser: ArgParser) {
 
     val jiraQuery by parser.storing(
         "--jiraQuery",
-        help = "A JQL query that selects the Jira issues you want to import"
+        help = "An optional JQL query that selects the Jira issues you want to import"
     ).default(null)
 
     val jiraUser by parser.storing(
@@ -33,8 +33,8 @@ data class CommandLineArgs(private val parser: ArgParser) {
     ).default(null)
 
     val jiraPassword by parser.storing(
-        "--jiraPassword",
-        help = "An optional password to use to login to Jira"
+        "--jiraApiToken", "--jiraPassword",
+        help = "An optional API token to use to login to Jira"
     ).default(null)
 
     // YouTrack
