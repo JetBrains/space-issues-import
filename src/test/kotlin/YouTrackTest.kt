@@ -4,21 +4,21 @@ import com.jetbrains.space.import.youtrack.YoutrackIssuesLoaderFactory
 import io.ktor.client.*
 import io.ktor.client.engine.apache.*
 import io.ktor.util.*
-import junit.framework.AssertionFailedError
 import kotlinx.coroutines.runBlocking
-import org.junit.Assert.assertTrue
-import org.junit.Before
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.fail
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class YouTrackTest {
     lateinit var httpClient: HttpClient
     lateinit var youtrack: IssuesLoader
 
-    @Before
+    @BeforeEach
     fun setUp() {
         val youTrackServerEnv = "YOUTRACK_SERVER"
         val youTrackServerUrl = System.getenv(youTrackServerEnv)
-            ?: throw AssertionFailedError("'$youTrackServerEnv' environment variable must be specified")
+            ?: fail("'$youTrackServerEnv' environment variable must be specified")
 
         youtrack = YoutrackIssuesLoaderFactory.create(youTrackServerUrl, "")
 
@@ -36,9 +36,8 @@ class YouTrackTest {
     @Test
     fun `load issues from youtrack`() {
         runBlocking {
-            val issues = IssuesLoadResult.Success(emptyList()) // youtrack.load("")
+            val issues = IssuesLoadResult.Success(emptyList(), emptyMap()) // youtrack.load("")
             assertTrue(issues is IssuesLoadResult.Success)
-
 
 //            SpaceUploader()
 //                .upload(
