@@ -1,5 +1,5 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.5.31'
+    id 'org.jetbrains.kotlin.jvm' version "1.7.10"
 }
 
 group 'com.jetbrains.space-issues-import'
@@ -16,26 +16,28 @@ repositories {
     maven { url "https://packages.atlassian.com/maven/repository/public" }
 }
 
-def space_sdk_version = '85203-beta'
+def space_sdk_version = '106390-beta'
 def youtrack_rest_client_version = '0.2.19'
-def jira_rest_client_version = '5.2.2'
+def jira_rest_client_version = '5.2.4'
 def notion_rest_client_version = '0.0.5'
 
-def kotlinx_coroutines_version = '1.5.1'
-def ktor_client_version = '1.6.3'
+def kotlinx_coroutines_version = '1.6.4'
+def ktor_client_version = '2.0.3'
 def kotlin_argparser_version = '2.0.7'
 
-def logback_version = '1.2.6'
+def logback_version = '1.2.11'
 
 dependencies {
     implementation "org.jetbrains:space-sdk-jvm:$space_sdk_version"
+
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_coroutines_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-slf4j:$kotlinx_coroutines_version"
+
     implementation "io.ktor:ktor-client-apache:$ktor_client_version"
-
     implementation "io.ktor:ktor-client-logging:$ktor_client_version"
-    implementation "ch.qos.logback:logback-classic:$logback_version"
-    implementation 'io.github.microutils:kotlin-logging:2.0.11'
 
+    implementation "ch.qos.logback:logback-classic:$logback_version"
+    implementation 'io.github.microutils:kotlin-logging:2.1.23'
     implementation "com.xenomachina:kotlin-argparser:$kotlin_argparser_version"
 
     // YouTrack
@@ -43,18 +45,24 @@ dependencies {
 
     // Jira
     implementation "com.atlassian.jira:jira-rest-java-client-core:$jira_rest_client_version"
-    implementation 'io.atlassian.fugue:fugue:4.7.2'
+    implementation 'io.atlassian.fugue:fugue:5.0.0'
 
     // Notion
     implementation "com.petersamokhin.notionsdk:notionsdk:$notion_rest_client_version"
 
-    testCompile group: 'junit', name: 'junit', version: '4.13'
+    testImplementation 'org.jetbrains.kotlin:kotlin-test:1.7.10'
 }
 
 jar {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+
     manifest {
         attributes "Main-Class": "com.jetbrains.space.import.MainKt"
     }
 
     from { configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+}
+
+test {
+    useJUnitPlatform()
 }

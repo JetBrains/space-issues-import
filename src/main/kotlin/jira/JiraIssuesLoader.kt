@@ -6,6 +6,8 @@ import com.atlassian.jira.rest.client.auth.BasicHttpAuthenticationHandler
 import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClientFactory
 import com.jetbrains.space.import.common.IssuesLoadResult
 import com.jetbrains.space.import.common.IssuesLoader
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import space.jetbrains.api.runtime.types.ExternalIssue
 import java.net.URI
@@ -66,6 +68,7 @@ private class JiraIssuesLoader(private val jiraUrl: String, username: String?, p
                 .fail { e ->
                     throw e.cause ?: e // unwrap original cause from ExecutionException
                 }
+                .claim()
         } while (current < total)
 
         return IssuesLoadResult.Success(allIssues.toList(), emptyMap())
