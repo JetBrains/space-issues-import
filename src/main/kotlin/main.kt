@@ -24,9 +24,11 @@ fun main(args: Array<String>) = mainBody {
             logger.info("Running in debug mode")
         }
 
-        val assigneeMapping = assigneeMapping.toMap()
-        val statusMapping = statusMapping.toMap()
-        val tagMapping = tagMapping.toMap()
+        fun List<Pair<String, String>>.mappingTransform() = toMap().mapKeys { it.key.lowercase() }
+
+        val assigneeMapping = assigneeMapping.mappingTransform()
+        val statusMapping = statusMapping.mappingTransform()
+        val tagMapping = tagMapping.mappingTransform()
 
         runBlocking {
             val (loader, params) = getLoaderAndParams()
@@ -36,8 +38,8 @@ fun main(args: Array<String>) = mainBody {
                 // Preprocess issues: replace assignees and statuses according to the arguments
                 val preprocessedIssues = issuesLoadResult.issues
                     .map {
-                        val assignee = assigneeMapping[it.assignee] ?: it.assignee
-                        val status = statusMapping[it.status] ?: it.status
+                        val assignee = assigneeMapping[it.assignee?.lowercase()] ?: it.assignee
+                        val status = statusMapping[it.status.lowercase()] ?: it.status
                         it.copy(assignee = assignee, status = status)
                     }
                 val preprocessedTags = issuesLoadResult.tags.mapNotNull { (externalId, tags) ->
@@ -86,24 +88,11 @@ private fun CommandLineArgs.getLoaderAndParams(): Pair<IssuesLoader, IssuesLoade
         ImportSource.Notion -> {
             val notionDatabaseId = notionDatabaseId
             val notionToken = notionToken
-            val notionAssigneeProperty = notionAssigneeProperty
-            val notionStatusProperty = notionStatusProperty
-            val notionTagProperty = notionTagProperty
-
             requireNotNull(notionDatabaseId) {
                 IllegalArgumentException("notionDatabaseId must be specified")
             }
             requireNotNull(notionToken) {
                 IllegalArgumentException("notionToken must be specified")
-            }
-            requireNotNull(notionAssigneeProperty) {
-                IllegalArgumentException("notionAssigneeProperty must be specified")
-            }
-            requireNotNull(notionStatusProperty) {
-                IllegalArgumentException("notionStatusProperty must be specified")
-            }
-            requireNotNull(notionTagProperty) {
-                IllegalArgumentException("notionTagProperty must be specified")
             }
 
             NotionIssuesLoaderFactory.create(notionToken) to IssuesLoader.Params.Notion(
