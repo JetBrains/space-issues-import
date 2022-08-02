@@ -23,37 +23,38 @@ class YoutrackIssuesLoader(private val serverUrl: String, private val token: Str
     override suspend fun load(params: IssuesLoader.Params) : IssuesLoadResult {
         return try {
             val url = URL(serverUrl).toString().trimEnd('/')
-            val youtrack = with(YouTrack) {
+            val (issuesCount, issues) = with(YouTrack) {
                 if (token.isNullOrBlank()) authorizeAsGuest(url) else authorizeByPermanentToken(url, token)
             }
+                .use { youtrack ->
+                    val issuesCount = youtrack.issues(params.query).count()
+                    issuesCount to youtrack.issues(params.query).mapIndexedNotNull { issueIndex, it ->
+                        try {
+                            val issue = ExternalIssue(
+                                summary = it.summary,
+                                description = it.description,
+                                assignee = it["Assignee"] ?: "",
+                                status = it.state.name,
+                                externalId = it.id,
+                                externalName = null,
+                                externalUrl = "$url/issue/${it.id}"
+                            )
 
-            val issuesCount = youtrack.issues(params.query).count()
-            val issues = youtrack.issues(params.query).mapIndexedNotNull { issueIndex, it ->
-                try {
-                    val issue = ExternalIssue(
-                        summary = it.summary,
-                        description = it.description,
-                        assignee = it["Assignee"] ?: "",
-                        status = it.state.name,
-                        externalId = it.id,
-                        externalName = null,
-                        externalUrl = "$url/issue/${it.id}"
-                    )
+                            logger.info("issue ${issueIndex + 1} / $issuesCount")
+                            logger.info("id         \t${it.id}")
+                            logger.info("status     \t${issue.status}")
+                            logger.info("assignee   \t${issue.assignee}")
+                            logger.info("summary    \t${issue.summary}")
+                            logger.info("description\t${issue.description?.take(64)?.lines()?.joinToString(" ")}...")
+                            logger.info("---")
 
-                    logger.info("issue ${issueIndex + 1} / $issuesCount")
-                    logger.info("id         \t${it.id}")
-                    logger.info("status     \t${issue.status}")
-                    logger.info("assignee   \t${issue.assignee}")
-                    logger.info("summary    \t${issue.summary}")
-                    logger.info("description\t${issue.description?.take(64)?.lines()?.joinToString(" ")}...")
-                    logger.info("---")
-
-                    issue
-                } catch (e: NullPointerException) {
-                    logger.error("failed to parse issue ${issueIndex + 1} / $issuesCount from YouTrack")
-                    null
+                            issue
+                        } catch (e: NullPointerException) {
+                            logger.error("failed to parse issue ${issueIndex + 1} / $issuesCount from YouTrack")
+                            null
+                        }
+                    }.toList()
                 }
-            }.toList()
 
             if (issues.count() != issuesCount) {
                 logger.error("some issues failed to parse, report the problem here: https://github.com/JetBrains/space-issues-import/issues/new")
