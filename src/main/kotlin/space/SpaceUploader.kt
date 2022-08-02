@@ -5,7 +5,7 @@ import com.jetbrains.space.import.common.ProjectPropertyType
 import com.xenomachina.argparser.SystemExitException
 import io.ktor.client.*
 import io.ktor.client.engine.apache.*
-import io.ktor.client.plugins.logging.*
+import io.ktor.client.features.logging.*
 import io.ktor.util.*
 import org.slf4j.LoggerFactory
 import space.jetbrains.api.runtime.*
@@ -34,7 +34,7 @@ class SpaceUploader {
         tags: Map<String, Set<String>>,
         tagPropertyMappingType: ProjectPropertyType,
     ): List<IssueImportResult> {
-        val httpClient = ktorClientForSpace()
+        val httpClient = createHttpClient()
             .let {
                 if (debug) {
                     it.config {
@@ -48,7 +48,7 @@ class SpaceUploader {
                 }
             }
 
-        val spaceClient = SpaceClient(httpClient, serverUrl = server, token = token)
+        val spaceClient = SpaceHttpClient(httpClient).withPermanentToken(serverUrl = server, token = token)
 
         if (dryRun) logger.info("[DRY RUN]")
 
@@ -72,7 +72,7 @@ class SpaceUploader {
         return result
     }
 
-    private suspend fun SpaceClient.addToBoard(
+    private suspend fun SpaceHttpClientWithCallContext.addToBoard(
         projectIdentifier: ProjectIdentifier,
         boardIdentifier: SpaceBoardCustomIdentifier,
         results: List<IssueImportResult>,
@@ -92,7 +92,7 @@ class SpaceUploader {
         }
     }
 
-    private suspend fun SpaceClient.addTags(
+    private suspend fun SpaceHttpClientWithCallContext.addTags(
         projectIdentifier: ProjectIdentifier,
         tags: Map<String, Set<String>>,
         tagPropertyMappingType: ProjectPropertyType,
@@ -130,7 +130,7 @@ class SpaceUploader {
         }
     }
 
-    private suspend fun SpaceClient.getAllBoards(projectIdentifier: ProjectIdentifier): List<BoardRecord> {
+    private suspend fun SpaceHttpClientWithCallContext.getAllBoards(projectIdentifier: ProjectIdentifier): List<BoardRecord> {
         var lastResponse = projects.planning.boards.getAllBoards(projectIdentifier)
         val result: MutableList<BoardRecord> = mutableListOf()
 
@@ -145,7 +145,7 @@ class SpaceUploader {
         return result
     }
 
-    private suspend fun SpaceClient.getAllHierarchicalTags(projectIdentifier: ProjectIdentifier): List<PlanningTag> {
+    private suspend fun SpaceHttpClientWithCallContext.getAllHierarchicalTags(projectIdentifier: ProjectIdentifier): List<PlanningTag> {
         var lastResponse = projects.planning.tags.getAllHierarchicalTags(projectIdentifier)
         val result: MutableList<PlanningTag> = mutableListOf()
 

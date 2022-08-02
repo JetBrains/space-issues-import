@@ -32,16 +32,16 @@ private class NotionIssuesLoader(token: String) : IssuesLoader {
                     summary = card.getTitle()
                         ?: return IssuesLoadResult.Failed("No property found in Notion database for title"),
                     description = card.getDescriptionAsMarkdown(),
-                    status = card.findProperty(params.statusProperty)?.value?.getTextValue(params.statusPropertyMappingType)
+                    status = params.statusProperty?.let { card.findProperty(it)?.value?.getTextValue(params.statusPropertyMappingType) }
                         .orEmpty(),
-                    assignee = card.findProperty(params.assigneeProperty)?.value?.getTextValue(params.assigneePropertyMappingType),
+                    assignee = params.assigneeProperty?.let { card.findProperty(it)?.value?.getTextValue(params.assigneePropertyMappingType) },
                     externalId = card.id,
                     externalName = "Notion",
                     externalUrl = "https://notion.so/${card.id.replace("-", "")}",
                 )
             },
             tags = notionCards.associate { card ->
-                val tags: Set<String> = when (val property = card.findProperty(params.tagProperty)?.value) {
+                val tags: Set<String> = when (val property = params.tagProperty?.let { card.findProperty(it)?.value }) {
                     is NotionDatabaseProperty.Title -> when (params.tagPropertyMappingType) {
                         ProjectPropertyType.Id -> setOf(property.id)
                         ProjectPropertyType.Name -> setOf(property.text)

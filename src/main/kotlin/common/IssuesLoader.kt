@@ -11,11 +11,11 @@ interface IssuesLoader {
         class Notion(
             override val query: String,
             val databaseId: String,
-            val assigneeProperty: ExternalProjectProperty,
+            val assigneeProperty: ExternalProjectProperty?,
             val assigneePropertyMappingType: ProjectPropertyType,
-            val statusProperty: ExternalProjectProperty,
+            val statusProperty: ExternalProjectProperty?,
             val statusPropertyMappingType: ProjectPropertyType,
-            val tagProperty: ExternalProjectProperty,
+            val tagProperty: ExternalProjectProperty?,
             val tagPropertyMappingType: ProjectPropertyType,
         ) : Params
 
