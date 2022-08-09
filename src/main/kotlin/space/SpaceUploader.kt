@@ -30,11 +30,11 @@ class SpaceUploader {
         dryRun: Boolean,
         batchSize: Int,
         debug: Boolean,
-        boardIdentifier: SpaceBoardCustomIdentifier?,
-        tags: Map<String, Set<String>>,
-        tagPropertyMappingType: ProjectPropertyType,
+        boardIdentifier: SpaceBoardCustomIdentifier? = null,
+        tags: Map<String, Set<String>> = emptyMap(),
+        tagPropertyMappingType: ProjectPropertyType? = null,
     ): List<IssueImportResult> {
-        val httpClient = createHttpClient()
+        val httpClient = ktorClientForSpace()
             .let {
                 if (debug) {
                     it.config {
@@ -48,7 +48,7 @@ class SpaceUploader {
                 }
             }
 
-        val spaceClient = SpaceHttpClient(httpClient).withPermanentToken(serverUrl = server, token = token)
+        val spaceClient = SpaceClient(httpClient, serverUrl = server, token = token)
 
         if (dryRun) logger.info("[DRY RUN]")
 
@@ -66,13 +66,13 @@ class SpaceUploader {
 
         if (!dryRun) {
             boardIdentifier?.let { spaceClient.addToBoard(projectIdentifier, boardIdentifier, result) }
-            spaceClient.addTags(projectIdentifier, tags, tagPropertyMappingType, result)
+            tagPropertyMappingType?.let { spaceClient.addTags(projectIdentifier, tags, tagPropertyMappingType, result) }
         }
 
         return result
     }
 
-    private suspend fun SpaceHttpClientWithCallContext.addToBoard(
+    private suspend fun SpaceClient.addToBoard(
         projectIdentifier: ProjectIdentifier,
         boardIdentifier: SpaceBoardCustomIdentifier,
         results: List<IssueImportResult>,
@@ -92,7 +92,7 @@ class SpaceUploader {
         }
     }
 
-    private suspend fun SpaceHttpClientWithCallContext.addTags(
+    private suspend fun SpaceClient.addTags(
         projectIdentifier: ProjectIdentifier,
         tags: Map<String, Set<String>>,
         tagPropertyMappingType: ProjectPropertyType,
@@ -130,7 +130,7 @@ class SpaceUploader {
         }
     }
 
-    private suspend fun SpaceHttpClientWithCallContext.getAllBoards(projectIdentifier: ProjectIdentifier): List<BoardRecord> {
+    private suspend fun SpaceClient.getAllBoards(projectIdentifier: ProjectIdentifier): List<BoardRecord> {
         var lastResponse = projects.planning.boards.getAllBoards(projectIdentifier)
         val result: MutableList<BoardRecord> = mutableListOf()
 
@@ -145,7 +145,7 @@ class SpaceUploader {
         return result
     }
 
-    private suspend fun SpaceHttpClientWithCallContext.getAllHierarchicalTags(projectIdentifier: ProjectIdentifier): List<PlanningTag> {
+    private suspend fun SpaceClient.getAllHierarchicalTags(projectIdentifier: ProjectIdentifier): List<PlanningTag> {
         var lastResponse = projects.planning.tags.getAllHierarchicalTags(projectIdentifier)
         val result: MutableList<PlanningTag> = mutableListOf()
 
@@ -158,16 +158,5 @@ class SpaceUploader {
         }
 
         return result
-    }
-
-    private fun createHttpClient(): HttpClient {
-        return HttpClient(Apache) {
-            engine {
-                followRedirects = true
-                socketTimeout = 60_000
-                connectTimeout = 60_000
-                connectionRequestTimeout = 60_000
-            }
-        }
     }
 }

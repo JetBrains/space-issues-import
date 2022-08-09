@@ -16,13 +16,13 @@ repositories {
     maven { url "https://packages.atlassian.com/maven/repository/public" }
 }
 
-def space_sdk_version = '85203-beta'//'106390-beta'
+def space_sdk_version = '99309-beta'//'108093-beta'
 def youtrack_rest_client_version = '0.2.19'
 def jira_rest_client_version = '5.2.4'
 def notion_rest_client_version = '0.0.5'
 
-def kotlinx_coroutines_version = '1.5.1'//'1.6.4'
-def ktor_client_version = '1.6.3'//'2.0.3'
+def kotlinx_coroutines_version = '1.6.4'
+def ktor_client_version = '1.6.8'//'2.0.3'
 def kotlin_argparser_version = '2.0.7'
 
 def logback_version = '1.2.11'
