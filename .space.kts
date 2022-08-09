@@ -1,9 +1,4 @@
-job("Build and run tests") {
-    startOn {
-        gitPush { enabled = true }
-        schedule { cron("0 8 * * *") }
-    }
-
+fun Job.buildAndRunTests() {
     gradlew("openjdk:11", "test", "--info") {
         env["JIRA_SERVER"] = Params("issues-import-automated-tests-jira-server")
         env["JIRA_TOKEN"] = Secrets("issues-import-automated-tests-jira-token")
@@ -15,5 +10,54 @@ job("Build and run tests") {
         env["TRY_IMPORT_INTO_SPACE"] = Params("issues-import-automated-tests-import-into-space")
         env["YOUTRACK_SERVER"] = Params("issues-import-automated-tests-youtrack-server")
         env["YOUTRACK_TOKEN"] = Secrets("issues-import-automated-tests-youtrack-token")
+    }
+}
+
+job("Build and run tests") {
+    startOn {
+        gitPush {
+            enabled = true
+            branchFilter {
+                +"refs/heads/*"
+                -"refs/heads/main"
+                -"refs/heads/dev"
+            }
+        }
+        schedule { cron("0 8 * * *") }
+    }
+
+    buildAndRunTests()
+}
+
+createDockerPushJob("main", "latest")
+createDockerPushJob("dev", "dev")
+
+fun createDockerPushJob(branchName: String, tag: String) {
+    job("Build, run tests and push to public.jetbrains.cloud registry ($tag)") {
+        startOn {
+            gitPush {
+                branchFilter = "refs/heads/$branchName"
+            }
+        }
+
+        buildAndRunTests()
+
+        docker("Push to public.jetbrains.space registry") {
+            env["REGISTRY_USER"] = Secrets("public-jetbrains-space-issues-import-publisher-client-id")
+            env["REGISTRY_TOKEN"] = Secrets("public-jetbrains-space-issues-import-publisher-token")
+
+            beforeBuildScript {
+                content = """
+                    B64_AUTH=${'$'}(echo -n ${'$'}REGISTRY_USER:${'$'}REGISTRY_TOKEN | base64 -w 0)
+                    echo "{\"auths\":{\"public.registry.jetbrains.space\":{\"auth\":\"${'$'}B64_AUTH\"}}}" > ${'$'}DOCKER_CONFIG/config.json
+                """.trimIndent()
+            }
+
+            build()
+
+            push("public.registry.jetbrains.space/p/space/containers/space-issues-import") {
+                tags(tag)
+            }
+        }
     }
 }
