@@ -29,11 +29,11 @@ job("Build and run tests") {
     buildAndRunTests()
 }
 
-createDockerPushJob("main", "latest")
-createDockerPushJob("dev", "dev")
+createDockerPushJob("main")
+createDockerPushJob("dev", "dev-${'$'}JB_SPACE_GIT_REVISION")
 
-fun createDockerPushJob(branchName: String, tag: String) {
-    job("Build, run tests and push to public.jetbrains.cloud registry ($tag)") {
+fun createDockerPushJob(branchName: String, tag: String? = null) {
+    job("Build, run tests and push to public.jetbrains.cloud registry ($branchName branch)") {
         startOn {
             gitPush {
                 branchFilter = "refs/heads/$branchName"
@@ -56,7 +56,7 @@ fun createDockerPushJob(branchName: String, tag: String) {
             build()
 
             push("public.registry.jetbrains.space/p/space/containers/space-issues-import") {
-                tags(tag)
+                if (tag != null) tags(tag)
             }
         }
     }
