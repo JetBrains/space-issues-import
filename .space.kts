@@ -20,7 +20,6 @@ job("Build and run tests") {
             branchFilter {
                 +"refs/heads/*"
                 -"refs/heads/main"
-                -"refs/heads/dev"
             }
         }
         schedule { cron("0 8 * * *") }
@@ -29,35 +28,28 @@ job("Build and run tests") {
     buildAndRunTests()
 }
 
-createDockerPushJob("main")
-createDockerPushJob("dev", "dev-${'$'}JB_SPACE_GIT_REVISION")
+job("Build, run tests and push to public.jetbrains.space registry (latest)") {
+    startOn {
+        gitPush {
+            branchFilter = "refs/heads/main"
+        }
+    }
 
-fun createDockerPushJob(branchName: String, tag: String? = null) {
-    job("Build, run tests and push to public.jetbrains.cloud registry ($branchName branch)") {
-        startOn {
-            gitPush {
-                branchFilter = "refs/heads/$branchName"
-            }
+    buildAndRunTests()
+
+    docker("Push to public.jetbrains.space registry") {
+        env["REGISTRY_USER"] = Secrets("public-jetbrains-space-issues-import-publisher-client-id")
+        env["REGISTRY_TOKEN"] = Secrets("public-jetbrains-space-issues-import-publisher-token")
+
+        beforeBuildScript {
+            content = """
+                B64_AUTH=${'$'}(echo -n ${'$'}REGISTRY_USER:${'$'}REGISTRY_TOKEN | base64 -w 0)
+                echo "{\"auths\":{\"public.registry.jetbrains.space\":{\"auth\":\"${'$'}B64_AUTH\"}}}" > ${'$'}DOCKER_CONFIG/config.json
+            """.trimIndent()
         }
 
-        buildAndRunTests()
+        build()
 
-        docker("Push to public.jetbrains.space registry") {
-            env["REGISTRY_USER"] = Secrets("public-jetbrains-space-issues-import-publisher-client-id")
-            env["REGISTRY_TOKEN"] = Secrets("public-jetbrains-space-issues-import-publisher-token")
-
-            beforeBuildScript {
-                content = """
-                    B64_AUTH=${'$'}(echo -n ${'$'}REGISTRY_USER:${'$'}REGISTRY_TOKEN | base64 -w 0)
-                    echo "{\"auths\":{\"public.registry.jetbrains.space\":{\"auth\":\"${'$'}B64_AUTH\"}}}" > ${'$'}DOCKER_CONFIG/config.json
-                """.trimIndent()
-            }
-
-            build()
-
-            push("public.registry.jetbrains.space/p/space/containers/space-issues-import") {
-                if (tag != null) tags(tag)
-            }
-        }
+        push("public.registry.jetbrains.space/p/space/containers/space-issues-import")
     }
 }
