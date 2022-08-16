@@ -2,7 +2,6 @@ package com.jetbrains.space.import.space
 
 import com.jetbrains.space.import.common.ImportSource
 import com.jetbrains.space.import.common.ProjectPropertyType
-import com.xenomachina.argparser.SystemExitException
 import io.ktor.client.*
 import io.ktor.client.engine.apache.*
 import io.ktor.client.features.logging.*
@@ -21,7 +20,7 @@ class SpaceUploader {
     suspend fun upload(
         server: String,
         token: String,
-        issues: List<ExternalIssue>,
+        issues: List<IssueTemplate>,
         projectIdentifier: ProjectIdentifier,
         importSource: ImportSource,
         assigneeMissingPolicy: ImportMissingPolicy,
@@ -31,7 +30,6 @@ class SpaceUploader {
         batchSize: Int,
         debug: Boolean,
         boardIdentifier: SpaceBoardCustomIdentifier? = null,
-        tags: Map<String, Set<String>> = emptyMap(),
         tagPropertyMappingType: ProjectPropertyType? = null,
     ): List<IssueImportResult> {
         val httpClient = ktorClientForSpace()
@@ -56,7 +54,7 @@ class SpaceUploader {
             spaceClient.projects.planning.issues.importIssues(
                 project = projectIdentifier,
                 metadata = ImportMetadata(importSource.name),
-                issues = issuesBatched,
+                issues = issuesBatched.map { it.externalIssue },
                 assigneeMissingPolicy = assigneeMissingPolicy,
                 statusMissingPolicy = statusMissingPolicy,
                 onExistsPolicy = onExistsPolicy,
@@ -66,7 +64,7 @@ class SpaceUploader {
 
         if (!dryRun) {
             boardIdentifier?.let { spaceClient.addToBoard(projectIdentifier, boardIdentifier, result) }
-            tagPropertyMappingType?.let { spaceClient.addTags(projectIdentifier, tags, tagPropertyMappingType, result) }
+            tagPropertyMappingType?.let { spaceClient.addTags(projectIdentifier, issues, tagPropertyMappingType, result) }
         }
 
         return result
@@ -94,21 +92,23 @@ class SpaceUploader {
 
     private suspend fun SpaceClient.addTags(
         projectIdentifier: ProjectIdentifier,
-        tags: Map<String, Set<String>>,
+        issues: List<IssueTemplate>,
         tagPropertyMappingType: ProjectPropertyType,
         results: List<IssueImportResult>,
     ) {
         val preprocessedTags: Map<String, Set<String>> = when (tagPropertyMappingType) {
-            ProjectPropertyType.Id -> tags
+            ProjectPropertyType.Id -> issues.associate { it.externalIssue.externalId to it.tags }
             ProjectPropertyType.Name -> {
                 val allHierarchicalTagsMap = getAllHierarchicalTags(projectIdentifier)
                     .associate { tag -> tag.name to tag.id }
 
-                tags.mapValues { (_, tags) ->
-                    tags.mapNotNullTo(HashSet()) { tag -> allHierarchicalTagsMap[tag] }
+                issues.associate {
+                    it.externalIssue.externalId to it.tags.mapNotNullTo(HashSet()) {
+                            tag -> allHierarchicalTagsMap[tag]
+                    }
                 }
             }
-            ProjectPropertyType.Email -> throw SystemExitException("can't map tags' emails", 2)
+            ProjectPropertyType.Email -> throw IllegalArgumentException("can't map tags' emails")
         }
 
         for (result in results) {

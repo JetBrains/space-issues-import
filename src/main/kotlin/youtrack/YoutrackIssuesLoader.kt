@@ -2,6 +2,7 @@ package com.jetbrains.space.import.youtrack
 
 import com.jetbrains.space.import.common.IssuesLoadResult
 import com.jetbrains.space.import.common.IssuesLoader
+import com.jetbrains.space.import.space.IssueTemplate
 import org.jetbrains.youtrack.rest.YouTrack
 import org.jetbrains.youtrack.rest.YouTrackClientException
 import org.slf4j.LoggerFactory
@@ -60,7 +61,7 @@ class YoutrackIssuesLoader(private val serverUrl: String, private val token: Str
                 logger.error("some issues failed to parse, report the problem here: https://github.com/JetBrains/space-issues-import/issues/new")
             }
 
-            IssuesLoadResult.Success(issues, emptyMap())
+            IssuesLoadResult.Success(issues.map { IssueTemplate(it) })
         } catch (e: YouTrackClientException) {
             logger.error("failed to parse YT response. Does `--youtrackServer` URL match the one in your YT Domain Settings? Typically, it should end with /youtrack")
             logger.error("original error message: $e")

@@ -12,7 +12,6 @@ import com.xenomachina.argparser.mainBody
 import io.ktor.util.*
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
-import space.jetbrains.api.runtime.types.ExternalIssue
 
 
 @InternalAPI
@@ -35,24 +34,16 @@ fun main(args: Array<String>) = mainBody {
             val issuesLoadResult = loader.load(params)
 
             if (issuesLoadResult is IssuesLoadResult.Success) {
-                // Preprocess issues: replace assignees and statuses according to the arguments
-                val preprocessedIssues = issuesLoadResult.issues
-                    .map {
-                        val assignee = assigneeMapping[it.assignee?.lowercase()] ?: it.assignee
-                        val status = statusMapping[it.status.lowercase()] ?: it.status
-                        it.copy(assignee = assignee, status = status)
-                    }
-                val preprocessedTags = issuesLoadResult.tags.mapNotNull { (externalId, tags) ->
-                    (externalId to tags.mapNotNull(tagMapping::get).toSet())
-                        .takeIf { (_, tags) -> tags.isNotEmpty() }
-                }.toMap()
+                // Preprocess issues: replace assignees, statuses and tags according to the arguments
+                issuesLoadResult.issues
+                    .forEach { it.resolveMappings(assigneeMapping, statusMapping, tagMapping) }
 
                 SpaceUploader()
                     .upload(
                         server = spaceServer,
                         token = spaceToken,
 
-                        issues = preprocessedIssues,
+                        issues = issuesLoadResult.issues,
                         projectIdentifier = spaceProject,
                         importSource = importSource,
 
@@ -65,7 +56,6 @@ fun main(args: Array<String>) = mainBody {
 
                         debug = debug,
                         boardIdentifier = spaceBoard,
-                        tags = preprocessedTags,
                         tagPropertyMappingType = tagPropertyMappingType,
                     )
                 logger.info("Finished")
@@ -76,8 +66,8 @@ fun main(args: Array<String>) = mainBody {
     }
 }
 
-private fun CommandLineArgs.getLoaderAndParams(): Pair<IssuesLoader, IssuesLoader.Params> {
-    val (loader, query) = when (importSource) {
+private fun CommandLineArgs.getLoaderAndParams()
+    = when (importSource) {
         ImportSource.Jira -> {
             val jiraUrl = jiraServer
             requireNotNull(jiraUrl) {
@@ -115,18 +105,3 @@ private fun CommandLineArgs.getLoaderAndParams(): Pair<IssuesLoader, IssuesLoade
             YoutrackIssuesLoaderFactory.create(youtrackServer, youtrackToken) to IssuesLoader.Params.YouTrack(youtrackQuery ?: "")
         }
     }
-
-    return loader to query
-}
-
-private fun ExternalIssue.copy(status: String, assignee: String?): ExternalIssue {
-    return ExternalIssue(
-        summary,
-        description,
-        status,
-        assignee,
-        externalId,
-        externalName,
-        externalUrl
-    )
-}

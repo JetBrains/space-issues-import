@@ -33,11 +33,8 @@ class NotionTest {
                     query = environmentVariables.notionQuery,
                     databaseId = environmentVariables.notionDatabaseId,
                     assigneeProperty = environmentVariables.notionAssigneePropertyName?.let { ExternalProjectProperty.Name(it) },
-                    assigneePropertyMappingType = ProjectPropertyType.Name,
                     statusProperty = environmentVariables.notionStatusPropertyName?.let { ExternalProjectProperty.Name(it) },
-                    statusPropertyMappingType = ProjectPropertyType.Name,
-                    tagProperty = environmentVariables.notionTagPropertyName?.let { ExternalProjectProperty.Name(it) },
-                    tagPropertyMappingType = ProjectPropertyType.Name
+                    tagProperty = environmentVariables.notionTagPropertyName?.let { ExternalProjectProperty.Name(it) }
                 )
             )
         }

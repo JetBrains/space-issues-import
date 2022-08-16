@@ -1,6 +1,6 @@
 package com.jetbrains.space.import.common
 
-import space.jetbrains.api.runtime.types.ExternalIssue
+import com.jetbrains.space.import.space.IssueTemplate
 
 interface IssuesLoader {
     suspend fun load(params: Params): IssuesLoadResult
@@ -12,11 +12,11 @@ interface IssuesLoader {
             override val query: String,
             val databaseId: String,
             val assigneeProperty: ExternalProjectProperty?,
-            val assigneePropertyMappingType: ProjectPropertyType,
+            val assigneePropertyMappingType: ProjectPropertyType = defaultProjectPropertyType,
             val statusProperty: ExternalProjectProperty?,
-            val statusPropertyMappingType: ProjectPropertyType,
+            val statusPropertyMappingType: ProjectPropertyType = defaultProjectPropertyType,
             val tagProperty: ExternalProjectProperty?,
-            val tagPropertyMappingType: ProjectPropertyType,
+            val tagPropertyMappingType: ProjectPropertyType = defaultProjectPropertyType,
         ) : Params
 
         class YouTrack(
@@ -31,5 +31,5 @@ interface IssuesLoader {
 
 sealed interface IssuesLoadResult {
     data class Failed(val message: String) : IssuesLoadResult
-    data class Success(val issues: List<ExternalIssue>, val tags: Map<String, Set<String>>) : IssuesLoadResult
+    data class Success(val issues: List<IssueTemplate>) : IssuesLoadResult
 }

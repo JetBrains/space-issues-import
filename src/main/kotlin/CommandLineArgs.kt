@@ -3,6 +3,7 @@ package com.jetbrains.space.import
 import com.jetbrains.space.import.common.ExternalProjectProperty
 import com.jetbrains.space.import.common.ProjectPropertyType
 import com.jetbrains.space.import.common.ImportSource
+import com.jetbrains.space.import.common.defaultProjectPropertyType
 import com.jetbrains.space.import.space.SpaceBoardCustomIdentifier
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.SystemExitException
@@ -118,9 +119,9 @@ data class CommandLineArgs(private val parser: ArgParser) {
             "Plain value (name) will be used otherwise (for email, phone number, text, title, etc.)",
         transform = {
             ProjectPropertyType.values().find { it.name.equals(this, ignoreCase = true) }
-                ?: ProjectPropertyType.Name
+                ?: defaultProjectPropertyType
         }
-    ).default(ProjectPropertyType.Name)
+    ).default(defaultProjectPropertyType)
 
     val notionStatusPropertyMappingType by parser.storing(
         "--notionStatusPropertyMappingType",
@@ -128,9 +129,9 @@ data class CommandLineArgs(private val parser: ArgParser) {
             "e.g. '--tag uuid-uuid::To Do' for 'id' vs '--tag To Do::To Do' for 'name'.",
         transform = {
             ProjectPropertyType.values().find { it.name.equals(this, ignoreCase = true) }
-                ?: ProjectPropertyType.Name
+                ?: defaultProjectPropertyType
         }
-    ).default(ProjectPropertyType.Name)
+    ).default(defaultProjectPropertyType)
 
     val notionTagPropertyMappingType by parser.storing(
         "--notionTagPropertyMappingType",
@@ -138,9 +139,9 @@ data class CommandLineArgs(private val parser: ArgParser) {
             "e.g. '--tag uuid-uuid::Android' for 'id' vs '--tag Android::Android' for 'name'.",
         transform = {
             ProjectPropertyType.values().find { it.name.equals(this, ignoreCase = true) }
-                ?: ProjectPropertyType.Name
+                ?: defaultProjectPropertyType
         }
-    ).default(ProjectPropertyType.Name)
+    ).default(defaultProjectPropertyType)
 
     val notionQuery by parser.storing(
         "--notionQuery",
@@ -256,9 +257,9 @@ data class CommandLineArgs(private val parser: ArgParser) {
             "e.g. '--tag Android::space-tag-id' for 'id' vs '--tag Android::Android' for 'name'.",
         transform = {
             ProjectPropertyType.values().find { it.name.equals(this, ignoreCase = true) }
-                ?: ProjectPropertyType.Name
+                ?: defaultProjectPropertyType
         }
-    ).default(ProjectPropertyType.Name)
+    ).default(defaultProjectPropertyType)
 
     private fun parseMapping(arg: String, separator: String = mappingSeparator): Pair<String, String> {
         val mapping = arg.split(separator)

@@ -8,3 +8,5 @@ sealed interface ExternalProjectProperty {
 enum class ProjectPropertyType {
     Id, Name, Email
 }
+
+val defaultProjectPropertyType = ProjectPropertyType.Name

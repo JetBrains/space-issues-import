@@ -4,6 +4,7 @@ import com.jetbrains.space.import.common.ExternalProjectProperty
 import com.jetbrains.space.import.common.ProjectPropertyType
 import com.jetbrains.space.import.common.IssuesLoadResult
 import com.jetbrains.space.import.common.IssuesLoader
+import com.jetbrains.space.import.space.IssueTemplate
 import com.petersamokhin.notionsdk.Notion
 import com.petersamokhin.notionsdk.data.model.result.*
 import com.petersamokhin.notionsdk.markdown.NotionMarkdownExporter
@@ -27,8 +28,8 @@ private class NotionIssuesLoader(token: String) : IssuesLoader {
         val notionCards = getAllNotionCards(databaseId = params.databaseId, query = params.query)
 
         return IssuesLoadResult.Success(
-            issues = notionCards.map { card ->
-                ExternalIssue(
+            notionCards.map { card ->
+                val externalIssue = ExternalIssue(
                     summary = card.getTitle()
                         ?: return IssuesLoadResult.Failed("No property found in Notion database for title"),
                     description = card.getDescriptionAsMarkdown(),
@@ -39,9 +40,8 @@ private class NotionIssuesLoader(token: String) : IssuesLoader {
                     externalName = "Notion",
                     externalUrl = "https://notion.so/${card.id.replace("-", "")}",
                 )
-            },
-            tags = notionCards.associate { card ->
-                val tags: Set<String> = when (val property = params.tagProperty?.let { card.findProperty(it)?.value }) {
+
+                val tags = when (val property = params.tagProperty?.let { card.findProperty(it)?.value }) {
                     is NotionDatabaseProperty.Title -> when (params.tagPropertyMappingType) {
                         ProjectPropertyType.Id -> setOf(property.id)
                         ProjectPropertyType.Name -> setOf(property.text)
@@ -65,7 +65,7 @@ private class NotionIssuesLoader(token: String) : IssuesLoader {
                     else -> null
                 } ?: emptySet()
 
-                card.id to tags
+                IssueTemplate(externalIssue, tags)
             }
         )
     }

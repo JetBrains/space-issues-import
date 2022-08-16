@@ -1,11 +1,11 @@
 import com.jetbrains.space.import.common.ImportSource
 import com.jetbrains.space.import.common.IssuesLoadResult
+import com.jetbrains.space.import.space.IssueTemplate
 import com.jetbrains.space.import.space.SpaceUploader
 import io.ktor.util.*
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.assertDoesNotThrow
-import space.jetbrains.api.runtime.types.ExternalIssue
 import space.jetbrains.api.runtime.types.ImportExistsPolicy
 import space.jetbrains.api.runtime.types.ImportMissingPolicy
 import space.jetbrains.api.runtime.types.ProjectIdentifier
@@ -53,7 +53,7 @@ inline fun <reified T> assertCast(value: Any) {
 @OptIn(InternalAPI::class)
 suspend fun tryImportingIssuesIntoSpace(
     environmentVariables: SpaceEnvironmentVariables,
-    issues: List<ExternalIssue>,
+    issues: List<IssueTemplate>,
     importSource: ImportSource
 ) = SpaceUploader()
         .upload(
