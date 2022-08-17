@@ -65,12 +65,12 @@ data class CommandLineArgs(private val parser: ArgParser) {
 
     val notionToken by parser.storing(
         "--notionToken",
-        help = "A mandatory token to access the Notion API."
+        help = "A token to access the Notion API."
     ).default(null)
 
     val notionAssigneeProperty by parser.storing(
         "--notionAssigneeProperty",
-        help = "The name or ID of a property in Notion which will be mapped to the Space issue assignee. For example, name::Title or id:uuid-uuid-uuid",
+        help = "The name or ID of a property in Notion which will be mapped to the Space issue assignee. For example, name::Title or id::uuid-uuid-uuid",
         transform = {
             val (identifierType, identifier) = parseMapping(this)
             when (identifierType.lowercase(Locale.getDefault())) {
@@ -84,7 +84,7 @@ data class CommandLineArgs(private val parser: ArgParser) {
 
     val notionStatusProperty by parser.storing(
         "--notionStatusProperty",
-        help = "The name or ID of a property in Notion which will be mapped to the Space issue status. For example, name::Title or id:uuid-uuid-uuid",
+        help = "The name or ID of a property in Notion which will be mapped to the Space issue status. For example, name::Title or id::uuid-uuid-uuid",
         transform = {
             val (identifierType, identifier) = parseMapping(this)
             when (identifierType.lowercase(Locale.getDefault())) {
@@ -98,7 +98,7 @@ data class CommandLineArgs(private val parser: ArgParser) {
 
     val notionTagProperty by parser.storing(
         "--notionTagProperty",
-        help = "The name or ID of a property in Notion which will be mapped to the Space issue tag. For example, name::Title or id:uuid-uuid-uuid",
+        help = "The name or ID of a property in Notion which will be mapped to the Space issue tag. For example, name::Title or id::uuid-uuid-uuid",
         transform = {
             val (identifierType, identifier) = parseMapping(this)
             when (identifierType.lowercase(Locale.getDefault())) {
@@ -114,9 +114,9 @@ data class CommandLineArgs(private val parser: ArgParser) {
         "--notionAssigneePropertyMappingType",
         help = "id, name, or email. Default: name. For --assignee command, what to map on the Notion side, " +
             "e.g. '--assignee uuid-uuid::john.doe' for 'id' vs '--assignee John Doe::john.doe' for 'name'. " +
-            "Please note that email will be used in case if the property is person (including created & edited by); " +
-            "id will be used in case of a person, select or multiselect. " +
-            "Plain value (name) will be used otherwise (for email, phone number, text, title, etc.)",
+            "This argument will be used in case the property corresponds to a person, select or multiselect. " +
+            "Plain value (name) will be used otherwise (for email, phone number, text, title, etc.). " +
+            "Note that email will only be used in case the property corresponds to a person (including created & edited by). ",
         transform = {
             ProjectPropertyType.values().find { it.name.equals(this, ignoreCase = true) }
                 ?: defaultProjectPropertyType
@@ -125,7 +125,7 @@ data class CommandLineArgs(private val parser: ArgParser) {
 
     val notionStatusPropertyMappingType by parser.storing(
         "--notionStatusPropertyMappingType",
-        help = "id or name, default: name. For --status command, what to map on the Notion side, " +
+        help = "id or name. Default: name. For --status command, what to map on the Notion side, " +
             "e.g. '--tag uuid-uuid::To Do' for 'id' vs '--tag To Do::To Do' for 'name'.",
         transform = {
             ProjectPropertyType.values().find { it.name.equals(this, ignoreCase = true) }
@@ -135,8 +135,19 @@ data class CommandLineArgs(private val parser: ArgParser) {
 
     val notionTagPropertyMappingType by parser.storing(
         "--notionTagPropertyMappingType",
-        help = "id or name, default: name. For --tag command, what to map on the Notion side, " +
+        help = "id or name. Default: name. For --tag command, what to map on the Notion side, " +
             "e.g. '--tag uuid-uuid::Android' for 'id' vs '--tag Android::Android' for 'name'.",
+        transform = {
+            ProjectPropertyType.values().find { it.name.equals(this, ignoreCase = true) }
+                ?: defaultProjectPropertyType
+        }
+    ).default(defaultProjectPropertyType)
+
+    val tagPropertyMappingType by parser.storing(
+        "--tagPropertyMappingType",
+        help = "[supported only for Notion] id or name. Default: name. Please add 'View project data' permission to your Space integration if you use 'name'. " +
+                "For --tag command, what to map on the Space side, " +
+                "e.g. '--tag Android::space-tag-id' for 'id' vs '--tag Android::Android' for 'name'.",
         transform = {
             ProjectPropertyType.values().find { it.name.equals(this, ignoreCase = true) }
                 ?: defaultProjectPropertyType
@@ -172,6 +183,19 @@ data class CommandLineArgs(private val parser: ArgParser) {
             }
         }
     )
+
+    val spaceBoard by parser.storing(
+        "--spaceBoard",
+        help = "[supported only for Notion] The name or ID of a board in Space into which you want to import issues. For example, name::Tasks or id:DRrHX45Jsxl",
+        transform = {
+            val (identifierType, identifier) = parseMapping(this)
+            when (identifierType.lowercase(Locale.getDefault())) {
+                "name" -> SpaceBoardCustomIdentifier.Name(identifier)
+                "id" -> SpaceBoardCustomIdentifier.Id(identifier)
+                else -> throw SystemExitException("only name::value or id::value are allowed for --spaceBoard as identifier", 2)
+            }
+        }
+    ).default(null)
 
     // Space /import API arguments
 
@@ -218,6 +242,14 @@ data class CommandLineArgs(private val parser: ArgParser) {
         transform = { parseMapping(this) }
     ).default(emptyList())
 
+    val tagMapping by parser.adding(
+        "-t", "--tag",
+        help = "[supported only for Notion] Maps the tag in the external system to a tag in Space. " +
+                "For example, external-tag${mappingSeparator}space-tag-id. " +
+                "Please remember to specify the tag property for the external system.",
+        transform = { parseMapping(this) }
+    ).default(emptyList())
+
     val batchSize by parser.storing(
         "--batchSize",
         help = "The size of a batch with issues being sent to Space per request. Default: 50.",
@@ -228,38 +260,6 @@ data class CommandLineArgs(private val parser: ArgParser) {
         "--debug",
         help = "Runs the import script in debug mode."
     )
-
-    val spaceBoard by parser.storing(
-        "--spaceBoard",
-        help = "The name or ID of a project in Space into which you want to import issues. For example, name::Tasks or id:DRrHX45Jsxl",
-        transform = {
-            val (identifierType, identifier) = parseMapping(this)
-            when (identifierType.lowercase(Locale.getDefault())) {
-                "name" -> SpaceBoardCustomIdentifier.Name(identifier)
-                "id" -> SpaceBoardCustomIdentifier.Id(identifier)
-                else -> throw SystemExitException("only name::value or id::value are allowed for --spaceBoard as identifier", 2)
-            }
-        }
-    ).default(null)
-
-    val tagMapping by parser.adding(
-        "-t", "--tag",
-        help = "[supported only for Notion] Maps the tag in the external system to a tag in Space. " +
-            "For example, external-tag${mappingSeparator}space-tag-id. " +
-            "Please remember to specify the tag property for the external system.",
-        transform = { parseMapping(this) }
-    ).default(emptyList())
-
-    val tagPropertyMappingType by parser.storing(
-        "--tagPropertyMappingType",
-        help = "id or name, default: name. Please add 'View project data' permission to your Space integration if you use 'name'. " +
-            "For --tag command, what to map on the Space side, " +
-            "e.g. '--tag Android::space-tag-id' for 'id' vs '--tag Android::Android' for 'name'.",
-        transform = {
-            ProjectPropertyType.values().find { it.name.equals(this, ignoreCase = true) }
-                ?: defaultProjectPropertyType
-        }
-    ).default(defaultProjectPropertyType)
 
     private fun parseMapping(arg: String, separator: String = mappingSeparator): Pair<String, String> {
         val mapping = arg.split(separator)

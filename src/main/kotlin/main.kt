@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory
 
 
 @InternalAPI
-fun main(args: Array<String>) = mainBody {
+fun main(args: Array<String>) = mainBody(columns = 140) {
     CommandLineArgs(ArgParser(args)).run {
         val logger = LoggerFactory.getLogger(this.javaClass)
 
