@@ -55,7 +55,6 @@ fun main(args: Array<String>) = mainBody(columns = 140) {
                         batchSize = batchSize,
 
                         debug = debug,
-                        boardIdentifier = spaceBoard,
                         tagPropertyMappingType = tagPropertyMappingType,
                     )
                 logger.info("Finished")

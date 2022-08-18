@@ -4,7 +4,6 @@ import com.jetbrains.space.import.common.ExternalProjectProperty
 import com.jetbrains.space.import.common.ProjectPropertyType
 import com.jetbrains.space.import.common.ImportSource
 import com.jetbrains.space.import.common.defaultProjectPropertyType
-import com.jetbrains.space.import.space.SpaceBoardCustomIdentifier
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.SystemExitException
 import com.xenomachina.argparser.default
@@ -70,13 +69,13 @@ data class CommandLineArgs(private val parser: ArgParser) {
 
     val notionAssigneeProperty by parser.storing(
         "--notionAssigneeProperty",
-        help = "The name or ID of a property in Notion which will be mapped to the Space issue assignee. For example, name::Title or id::uuid-uuid-uuid",
+        help = "The name or ID of a property in Notion which will be mapped to the Space issue assignee. For example, name${mappingSeparator}Title or id${mappingSeparator}uuid-uuid-uuid",
         transform = {
             val (identifierType, identifier) = parseMapping(this)
             when (identifierType.lowercase(Locale.getDefault())) {
                 "name" -> ExternalProjectProperty.Name(identifier)
                 "id" -> ExternalProjectProperty.Id(identifier)
-                else -> throw SystemExitException("only name::value or id::value are allowed for --notionAssigneeProperty as identifier",
+                else -> throw SystemExitException("only name${mappingSeparator}value or id${mappingSeparator}value are allowed for --notionAssigneeProperty as identifier",
                     2)
             }
         }
@@ -84,13 +83,13 @@ data class CommandLineArgs(private val parser: ArgParser) {
 
     val notionStatusProperty by parser.storing(
         "--notionStatusProperty",
-        help = "The name or ID of a property in Notion which will be mapped to the Space issue status. For example, name::Title or id::uuid-uuid-uuid",
+        help = "The name or ID of a property in Notion which will be mapped to the Space issue status. For example, name${mappingSeparator}Title or id${mappingSeparator}uuid-uuid-uuid",
         transform = {
             val (identifierType, identifier) = parseMapping(this)
             when (identifierType.lowercase(Locale.getDefault())) {
                 "name" -> ExternalProjectProperty.Name(identifier)
                 "id" -> ExternalProjectProperty.Id(identifier)
-                else -> throw SystemExitException("only name::value or id::value are allowed for --notionStatusProperty as identifier",
+                else -> throw SystemExitException("only name${mappingSeparator}value or id${mappingSeparator}value are allowed for --notionStatusProperty as identifier",
                     2)
             }
         }
@@ -98,13 +97,13 @@ data class CommandLineArgs(private val parser: ArgParser) {
 
     val notionTagProperty by parser.storing(
         "--notionTagProperty",
-        help = "The name or ID of a property in Notion which will be mapped to the Space issue tag. For example, name::Title or id::uuid-uuid-uuid",
+        help = "The name or ID of a property in Notion which will be mapped to the Space issue tag. For example, name${mappingSeparator}Title or id${mappingSeparator}uuid-uuid-uuid",
         transform = {
             val (identifierType, identifier) = parseMapping(this)
             when (identifierType.lowercase(Locale.getDefault())) {
                 "name" -> ExternalProjectProperty.Name(identifier)
                 "id" -> ExternalProjectProperty.Id(identifier)
-                else -> throw SystemExitException("only name::value or id::value are allowed for --notionStatusProperty as identifier",
+                else -> throw SystemExitException("only name${mappingSeparator}value or id${mappingSeparator}value are allowed for --notionStatusProperty as identifier",
                     2)
             }
         }
@@ -113,7 +112,7 @@ data class CommandLineArgs(private val parser: ArgParser) {
     val notionAssigneePropertyMappingType by parser.storing(
         "--notionAssigneePropertyMappingType",
         help = "id, name, or email. Default: name. For --assignee command, what to map on the Notion side, " +
-            "e.g. '--assignee uuid-uuid::john.doe' for 'id' vs '--assignee John Doe::john.doe' for 'name'. " +
+            "e.g. '--assignee uuid-uuid${mappingSeparator}john.doe' for 'id' vs '--assignee John Doe${mappingSeparator}john.doe' for 'name'. " +
             "This argument will be used in case the property corresponds to a person, select or multiselect. " +
             "Plain value (name) will be used otherwise (for email, phone number, text, title, etc.). " +
             "Note that email will only be used in case the property corresponds to a person (including created & edited by). ",
@@ -126,7 +125,7 @@ data class CommandLineArgs(private val parser: ArgParser) {
     val notionStatusPropertyMappingType by parser.storing(
         "--notionStatusPropertyMappingType",
         help = "id or name. Default: name. For --status command, what to map on the Notion side, " +
-            "e.g. '--tag uuid-uuid::To Do' for 'id' vs '--tag To Do::To Do' for 'name'.",
+            "e.g. '--tag uuid-uuid${mappingSeparator}To Do' for 'id' vs '--tag To Do${mappingSeparator}To Do' for 'name'.",
         transform = {
             ProjectPropertyType.values().find { it.name.equals(this, ignoreCase = true) }
                 ?: defaultProjectPropertyType
@@ -136,7 +135,7 @@ data class CommandLineArgs(private val parser: ArgParser) {
     val notionTagPropertyMappingType by parser.storing(
         "--notionTagPropertyMappingType",
         help = "id or name. Default: name. For --tag command, what to map on the Notion side, " +
-            "e.g. '--tag uuid-uuid::Android' for 'id' vs '--tag Android::Android' for 'name'.",
+            "e.g. '--tag uuid-uuid${mappingSeparator}Android' for 'id' vs '--tag Android${mappingSeparator}Android' for 'name'.",
         transform = {
             ProjectPropertyType.values().find { it.name.equals(this, ignoreCase = true) }
                 ?: defaultProjectPropertyType
@@ -147,7 +146,7 @@ data class CommandLineArgs(private val parser: ArgParser) {
         "--tagPropertyMappingType",
         help = "[supported only for Notion] id or name. Default: name. Please add 'View project data' permission to your Space integration if you use 'name'. " +
                 "For --tag command, what to map on the Space side, " +
-                "e.g. '--tag Android::space-tag-id' for 'id' vs '--tag Android::Android' for 'name'.",
+                "e.g. '--tag Android${mappingSeparator}space-tag-id' for 'id' vs '--tag Android${mappingSeparator}Android' for 'name'.",
         transform = {
             ProjectPropertyType.values().find { it.name.equals(this, ignoreCase = true) }
                 ?: defaultProjectPropertyType
@@ -179,23 +178,10 @@ data class CommandLineArgs(private val parser: ArgParser) {
             when (identifierType.lowercase(Locale.getDefault())) {
                 "key" -> ProjectIdentifier.Key(identifier)
                 "id" -> ProjectIdentifier.Key(identifier)
-                else -> throw SystemExitException("only key::value or id::value are allowed for --spaceProject as identifier", 2)
+                else -> throw SystemExitException("only key${mappingSeparator}value or id${mappingSeparator}value are allowed for --spaceProject as identifier", 2)
             }
         }
     )
-
-    val spaceBoard by parser.storing(
-        "--spaceBoard",
-        help = "[supported only for Notion] The name or ID of a board in Space into which you want to import issues. For example, name::Tasks or id:DRrHX45Jsxl",
-        transform = {
-            val (identifierType, identifier) = parseMapping(this)
-            when (identifierType.lowercase(Locale.getDefault())) {
-                "name" -> SpaceBoardCustomIdentifier.Name(identifier)
-                "id" -> SpaceBoardCustomIdentifier.Id(identifier)
-                else -> throw SystemExitException("only name::value or id::value are allowed for --spaceBoard as identifier", 2)
-            }
-        }
-    ).default(null)
 
     // Space /import API arguments
 

@@ -24,6 +24,9 @@ $ docker run public.registry.jetbrains.space/p/space/containers/space-issues-imp
         --replaceMissingAssignee
 ```
 
+### From GitHub
+`In progress`
+
 ### From Jira
 
 ```
@@ -81,8 +84,8 @@ usage: [-h] [--jiraServer JIRASERVER] [--jiraQuery JIRAQUERY] [--jiraUser JIRAUS
        [--notionAssigneePropertyMappingType NOTIONASSIGNEEPROPERTYMAPPINGTYPE]
        [--notionStatusPropertyMappingType NOTIONSTATUSPROPERTYMAPPINGTYPE] [--notionTagPropertyMappingType NOTIONTAGPROPERTYMAPPINGTYPE]
        [--tagPropertyMappingType TAGPROPERTYMAPPINGTYPE] [--notionQuery NOTIONQUERY] --spaceServer SPACESERVER --spaceToken SPACETOKEN
-       --spaceProject SPACEPROJECT [--spaceBoard SPACEBOARD] [--importSource IMPORTSOURCE] [--dryRun] [--updateExistingIssues]
-       [--replaceMissingStatus] [--replaceMissingAssignee] [-a ASSIGNEE]... [-s STATUS]... [-t TAG]... [--batchSize BATCHSIZE] [--debug]
+       --spaceProject SPACEPROJECT [--importSource IMPORTSOURCE] [--dryRun] [--updateExistingIssues] [--replaceMissingStatus]
+       [--replaceMissingAssignee] [-a ASSIGNEE]... [-s STATUS]... [-t TAG]... [--batchSize BATCHSIZE] [--debug]
 
 required arguments:
   --spaceServer SPACESERVER                                               The URL of the Space instance that you want to import into.
@@ -160,10 +163,6 @@ optional arguments:
   --notionQuery NOTIONQUERY                                               JSON string which will be used as the request body to
                                                                           databases/:id/query. By default, all the cards from the board
                                                                           are exported.
-
-  --spaceBoard SPACEBOARD                                                 [supported only for Notion] The name or ID of a board in Space
-                                                                          into which you want to import issues. For example, name::Tasks
-                                                                          or id:DRrHX45Jsxl
 
   --importSource IMPORTSOURCE                                             The name of the import source. Default: External.
 

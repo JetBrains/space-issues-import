@@ -29,7 +29,6 @@ class SpaceUploader {
         dryRun: Boolean,
         batchSize: Int,
         debug: Boolean,
-        boardIdentifier: SpaceBoardCustomIdentifier? = null,
         tagPropertyMappingType: ProjectPropertyType? = null,
     ): List<IssueImportResult> {
         val httpClient = ktorClientForSpace()
@@ -63,31 +62,10 @@ class SpaceUploader {
         }
 
         if (!dryRun) {
-            boardIdentifier?.let { spaceClient.addToBoard(projectIdentifier, boardIdentifier, result) }
             tagPropertyMappingType?.let { spaceClient.addTags(projectIdentifier, issues, tagPropertyMappingType, result) }
         }
 
         return result
-    }
-
-    private suspend fun SpaceClient.addToBoard(
-        projectIdentifier: ProjectIdentifier,
-        boardIdentifier: SpaceBoardCustomIdentifier,
-        results: List<IssueImportResult>,
-    ) {
-        val boardId = when (boardIdentifier) {
-            is SpaceBoardCustomIdentifier.Id -> boardIdentifier.id
-            is SpaceBoardCustomIdentifier.Name -> getAllBoards(projectIdentifier).find { it.name == boardIdentifier.name }?.id
-        } ?: return logger.error("no board with the name provided found, skipping")
-
-        val issues = results.map { result ->
-            ((result.created ?: emptyList()) + (result.updated ?: emptyList()))
-                .mapNotNull(IssueImportResultItem::issue)
-        }.flatten()
-
-        issues.forEach { issue ->
-            projects.planning.boards.issues.addIssueToBoard(IssueIdentifier.Id(issue.id), BoardIdentifier.Id(boardId))
-        }
     }
 
     private suspend fun SpaceClient.addTags(
@@ -128,21 +106,6 @@ class SpaceUploader {
                 }
             }
         }
-    }
-
-    private suspend fun SpaceClient.getAllBoards(projectIdentifier: ProjectIdentifier): List<BoardRecord> {
-        var lastResponse = projects.planning.boards.getAllBoards(projectIdentifier)
-        val result: MutableList<BoardRecord> = mutableListOf()
-
-        while (lastResponse.data.isNotEmpty()) {
-            result += lastResponse.data
-            lastResponse = projects.planning.boards.getAllBoards(
-                project = projectIdentifier,
-                batchInfo = BatchInfo(lastResponse.next, 100)
-            )
-        }
-
-        return result
     }
 
     private suspend fun SpaceClient.getAllHierarchicalTags(projectIdentifier: ProjectIdentifier): List<PlanningTag> {
