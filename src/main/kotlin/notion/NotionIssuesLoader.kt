@@ -1,15 +1,13 @@
 package com.jetbrains.space.import.notion
 
-import com.jetbrains.space.import.common.ExternalProjectProperty
-import com.jetbrains.space.import.common.ProjectPropertyType
-import com.jetbrains.space.import.common.IssuesLoadResult
-import com.jetbrains.space.import.common.IssuesLoader
+import com.jetbrains.space.import.common.*
 import com.jetbrains.space.import.space.IssueTemplate
 import com.petersamokhin.notionsdk.Notion
 import com.petersamokhin.notionsdk.data.model.result.*
 import com.petersamokhin.notionsdk.markdown.NotionMarkdownExporter
 import io.ktor.client.*
 import io.ktor.client.engine.apache.*
+import org.slf4j.LoggerFactory
 import space.jetbrains.api.runtime.types.ExternalIssue
 
 object NotionIssuesLoaderFactory {
@@ -23,51 +21,61 @@ private class NotionIssuesLoader(token: String) : IssuesLoader {
 
     override suspend fun load(params: IssuesLoader.Params): IssuesLoadResult {
         if (params !is IssuesLoader.Params.Notion)
-            return IssuesLoadResult.Failed("wrong params passed to Notion issues loader")
+            return IssuesLoadResult.Failed.wrongParams(NotionIssuesLoader::class)
 
-        val notionCards = getAllNotionCards(databaseId = params.databaseId, query = params.query)
+        return try {
+            val notionCards = getAllNotionCards(databaseId = params.databaseId, query = params.query.orEmpty())
 
-        return IssuesLoadResult.Success(
-            notionCards.map { card ->
-                val externalIssue = ExternalIssue(
-                    summary = card.getTitle()
-                        ?: return IssuesLoadResult.Failed("No property found in Notion database for title"),
-                    description = card.getDescriptionAsMarkdown(),
-                    status = params.statusProperty?.let { card.findProperty(it)?.value?.getTextValue(params.statusPropertyMappingType) }
-                        .orEmpty(),
-                    assignee = params.assigneeProperty?.let { card.findProperty(it)?.value?.getTextValue(params.assigneePropertyMappingType) },
-                    externalId = card.id,
-                    externalName = "Notion",
-                    externalUrl = "https://notion.so/${card.id.replace("-", "")}",
-                )
+            IssuesLoadResult.Success(
+                notionCards.mapIndexed { cardIndex, card ->
+                    val externalIssue = ExternalIssue(
+                        summary = card.getTitle()
+                            ?: return IssuesLoadResult.Failed("No property found in Notion database for title"),
+                        description = card.getDescriptionAsMarkdown(),
+                        status = params.statusProperty?.let { card.findProperty(it)?.value?.getTextValue(params.statusPropertyMappingType) }
+                            .orEmpty(),
+                        assignee = params.assigneeProperty?.let { card.findProperty(it)?.value?.getTextValue(params.assigneePropertyMappingType) },
+                        externalId = card.id,
+                        externalName = "Notion",
+                        externalUrl = "https://notion.so/${card.id.replace("-", "")}",
+                    )
+                        .also { logger.info(it, cardIndex, notionCards.size) }
 
-                val tags = when (val property = params.tagProperty?.let { card.findProperty(it)?.value }) {
-                    is NotionDatabaseProperty.Title -> when (params.tagPropertyMappingType) {
-                        ProjectPropertyType.Id -> setOf(property.id)
-                        ProjectPropertyType.Name -> setOf(property.text)
-                        ProjectPropertyType.Email -> null
-                    }
-                    is NotionDatabaseProperty.Text -> when (params.tagPropertyMappingType) {
-                        ProjectPropertyType.Id -> setOf(property.id)
-                        ProjectPropertyType.Name -> setOf(property.text)
-                        ProjectPropertyType.Email -> null
-                    }
-                    is NotionDatabaseProperty.Select -> when (params.tagPropertyMappingType) {
-                        ProjectPropertyType.Id -> setOf(property.id)
-                        ProjectPropertyType.Name -> property.selected?.name?.let(::setOf)
-                        ProjectPropertyType.Email -> null
-                    }
-                    is NotionDatabaseProperty.MultiSelect -> when (params.tagPropertyMappingType) {
-                        ProjectPropertyType.Id -> property.selected.map(NotionDatabaseProperty.Select.Option::id)
-                        ProjectPropertyType.Name -> property.selected.map(NotionDatabaseProperty.Select.Option::name)
-                        ProjectPropertyType.Email -> null
-                    }?.toSet()?.takeIf(Set<String>::isNotEmpty)
-                    else -> null
-                } ?: emptySet()
+                    val tags = when (val property = params.tagProperty?.let { card.findProperty(it)?.value }) {
+                        is NotionDatabaseProperty.Title -> when (params.tagPropertyMappingType) {
+                            ProjectPropertyType.Id -> setOf(property.id)
+                            ProjectPropertyType.Name -> setOf(property.text)
+                            ProjectPropertyType.Email -> null
+                        }
 
-                IssueTemplate(externalIssue, tags)
-            }
-        )
+                        is NotionDatabaseProperty.Text -> when (params.tagPropertyMappingType) {
+                            ProjectPropertyType.Id -> setOf(property.id)
+                            ProjectPropertyType.Name -> setOf(property.text)
+                            ProjectPropertyType.Email -> null
+                        }
+
+                        is NotionDatabaseProperty.Select -> when (params.tagPropertyMappingType) {
+                            ProjectPropertyType.Id -> setOf(property.id)
+                            ProjectPropertyType.Name -> property.selected?.name?.let(::setOf)
+                            ProjectPropertyType.Email -> null
+                        }
+
+                        is NotionDatabaseProperty.MultiSelect -> when (params.tagPropertyMappingType) {
+                            ProjectPropertyType.Id -> property.selected.map(NotionDatabaseProperty.Select.Option::id)
+                            ProjectPropertyType.Name -> property.selected.map(NotionDatabaseProperty.Select.Option::name)
+                            ProjectPropertyType.Email -> null
+                        }?.toSet()?.takeIf(Set<String>::isNotEmpty)
+
+                        else -> null
+                    } ?: emptySet()
+
+                    IssueTemplate(externalIssue, tags)
+                }
+            )
+        } catch (e: Exception) {
+            logger.externalServiceClientError(e, "failed to retrieve issues from Notion")
+            IssuesLoadResult.Failed.messageOrUnknownException(e)
+        }
     }
 
     private fun NotionDatabaseProperty.getTextValue(type: ProjectPropertyType): String? =
@@ -171,5 +179,6 @@ private class NotionIssuesLoader(token: String) : IssuesLoader {
 
     companion object {
         private const val CARD_TITLE_PROPERTY_ID = "title"
+        private val logger = LoggerFactory.getLogger(NotionIssuesLoader::class.java)
     }
 }

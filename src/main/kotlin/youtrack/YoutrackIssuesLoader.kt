@@ -1,7 +1,6 @@
 package com.jetbrains.space.import.youtrack
 
-import com.jetbrains.space.import.common.IssuesLoadResult
-import com.jetbrains.space.import.common.IssuesLoader
+import com.jetbrains.space.import.common.*
 import com.jetbrains.space.import.space.IssueTemplate
 import org.jetbrains.youtrack.rest.YouTrack
 import org.jetbrains.youtrack.rest.YouTrackClientException
@@ -9,29 +8,34 @@ import org.slf4j.LoggerFactory
 import space.jetbrains.api.runtime.types.ExternalIssue
 import java.net.URL
 
-
 object YoutrackIssuesLoaderFactory {
     fun create(serverUrl: String, token: String?): IssuesLoader {
         return YoutrackIssuesLoader(serverUrl, token)
     }
 }
 
-class YoutrackIssuesLoader(private val serverUrl: String, private val token: String?) : IssuesLoader {
+private class YoutrackIssuesLoader(private val serverUrl: String, private val token: String?) : IssuesLoader {
     companion object {
         private val logger = LoggerFactory.getLogger(YoutrackIssuesLoader::class.java)
+        const val defaultYouTrackQuery = "sort by: created asc"
     }
 
     override suspend fun load(params: IssuesLoader.Params) : IssuesLoadResult {
+        if (params !is IssuesLoader.Params.YouTrack)
+            return IssuesLoadResult.Failed.wrongParams(YoutrackIssuesLoader::class)
+
+        val query = params.query ?: defaultYouTrackQuery
+
         return try {
             val url = URL(serverUrl).toString().trimEnd('/')
             val (issuesCount, issues) = with(YouTrack) {
                 if (token.isNullOrBlank()) authorizeAsGuest(url) else authorizeByPermanentToken(url, token)
             }
                 .use { youtrack ->
-                    val issuesCount = youtrack.issues(params.query).count()
-                    issuesCount to youtrack.issues(params.query).mapIndexedNotNull { issueIndex, it ->
+                    val issuesCount = youtrack.issues(query).count()
+                    issuesCount to youtrack.issues(query).mapIndexedNotNull { issueIndex, it ->
                         try {
-                            val issue = ExternalIssue(
+                            ExternalIssue(
                                 summary = it.summary,
                                 description = it.description,
                                 assignee = it["Assignee"] ?: "",
@@ -40,39 +44,28 @@ class YoutrackIssuesLoader(private val serverUrl: String, private val token: Str
                                 externalName = null,
                                 externalUrl = "$url/issue/${it.id}"
                             )
-
-                            logger.info("issue ${issueIndex + 1} / $issuesCount")
-                            logger.info("id         \t${it.id}")
-                            logger.info("status     \t${issue.status}")
-                            logger.info("assignee   \t${issue.assignee}")
-                            logger.info("summary    \t${issue.summary}")
-                            logger.info("description\t${issue.description?.take(64)?.lines()?.joinToString(" ")}...")
-                            logger.info("---")
-
-                            issue
+                                .also { logger.info(it, issueIndex, issuesCount) }
                         } catch (e: NullPointerException) {
-                            logger.error("failed to parse issue ${issueIndex + 1} / $issuesCount from YouTrack")
+                            logger.failedToParseIssue(issueIndex, issuesCount, "YouTrack")
                             null
                         }
                     }.toList()
                 }
 
             if (issues.count() != issuesCount) {
-                logger.error("some issues failed to parse, report the problem here: https://github.com/JetBrains/space-issues-import/issues/new")
+                logger.someIssuesFailedToParse()
             }
 
             IssuesLoadResult.Success(issues.map { IssueTemplate(it) })
         } catch (e: YouTrackClientException) {
-            logger.error("failed to parse YT response. Does `--youtrackServer` URL match the one in your YT Domain Settings? Typically, it should end with /youtrack")
-            logger.error("original error message: $e")
-            logger.error("if the problem still persists, report it here: https://github.com/JetBrains/space-issues-import/issues/new")
+            logger.externalServiceClientError(e,
+                "failed to parse YT response. Does `--youtrackServer` URL match the one in your YT Domain Settings? Typically, it should end with /youtrack")
 
-            IssuesLoadResult.Failed(e.message ?: "unknown exception")
+            IssuesLoadResult.Failed.messageOrUnknownException(e)
         } catch (e: Exception) {
-            logger.error(e.toString())
-            logger.error("report the problem here: https://github.com/JetBrains/space-issues-import/issues/new")
+            logger.generalError(e)
 
-            IssuesLoadResult.Failed(e.message ?: "unknown exception")
+            IssuesLoadResult.Failed.messageOrUnknownException(e)
         }
     }
 }

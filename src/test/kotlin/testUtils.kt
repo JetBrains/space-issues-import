@@ -1,7 +1,7 @@
 import com.jetbrains.space.import.common.ImportSource
 import com.jetbrains.space.import.common.IssuesLoadResult
 import com.jetbrains.space.import.space.IssueTemplate
-import com.jetbrains.space.import.space.SpaceUploader
+import com.jetbrains.space.import.space.SpaceUploaderImpl
 import io.ktor.util.*
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -55,7 +55,7 @@ suspend fun tryImportingIssuesIntoSpace(
     environmentVariables: SpaceEnvironmentVariables,
     issues: List<IssueTemplate>,
     importSource: ImportSource
-) = SpaceUploader()
+) = SpaceUploaderImpl()
         .upload(
             server = environmentVariables.spaceServer,
             token = environmentVariables.spaceToken,

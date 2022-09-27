@@ -3,19 +3,27 @@ package com.jetbrains.space.import
 import com.jetbrains.space.import.common.ImportSource
 import com.jetbrains.space.import.common.IssuesLoadResult
 import com.jetbrains.space.import.common.IssuesLoader
+import com.jetbrains.space.import.github.GitHubIssuesLoaderFactory
 import com.jetbrains.space.import.jira.JiraIssuesLoaderFactory
 import com.jetbrains.space.import.notion.NotionIssuesLoaderFactory
 import com.jetbrains.space.import.space.SpaceUploader
+import com.jetbrains.space.import.space.SpaceUploaderImpl
 import com.jetbrains.space.import.youtrack.YoutrackIssuesLoaderFactory
 import com.xenomachina.argparser.ArgParser
 import com.xenomachina.argparser.mainBody
 import io.ktor.util.*
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 
 @InternalAPI
-fun main(args: Array<String>) = mainBody(columns = 140) {
+fun main(
+    args: Array<String>,
+    spaceUploader: SpaceUploader = SpaceUploaderImpl(),
+    getLoaderAndParams: (() -> Pair<IssuesLoader, IssuesLoader.Params>)? = null
+) = mainBody(columns = 140) {
     CommandLineArgs(ArgParser(args)).run {
         val logger = LoggerFactory.getLogger(this.javaClass)
 
@@ -30,7 +38,7 @@ fun main(args: Array<String>) = mainBody(columns = 140) {
         val tagMapping = tagMapping.mappingTransform()
 
         runBlocking {
-            val (loader, params) = getLoaderAndParams()
+            val (loader, params) = getLoaderAndParams?.invoke() ?: getLoaderAndParams()
             val issuesLoadResult = loader.load(params)
 
             if (issuesLoadResult is IssuesLoadResult.Success) {
@@ -38,7 +46,7 @@ fun main(args: Array<String>) = mainBody(columns = 140) {
                 issuesLoadResult.issues
                     .forEach { it.resolveMappings(assigneeMapping, statusMapping, tagMapping) }
 
-                SpaceUploader()
+                spaceUploader
                     .upload(
                         server = spaceServer,
                         token = spaceToken,
@@ -68,24 +76,18 @@ fun main(args: Array<String>) = mainBody(columns = 140) {
 private fun CommandLineArgs.getLoaderAndParams()
     = when (importSource) {
         ImportSource.Jira -> {
-            val jiraUrl = jiraServer
-            requireNotNull(jiraUrl) {
-                IllegalArgumentException("jiraServer must be specified")
-            }
-            JiraIssuesLoaderFactory.create(jiraUrl, jiraUser, jiraPassword) to IssuesLoader.Params.Jira(jiraQuery ?: "")
+            val jiraServer = jiraServer
+            requiredArgument("jiraServer", jiraServer)
+            JiraIssuesLoaderFactory.create(jiraServer, jiraUser, jiraPassword) to IssuesLoader.Params.Jira(jiraQuery)
         }
         ImportSource.Notion -> {
             val notionDatabaseId = notionDatabaseId
             val notionToken = notionToken
-            requireNotNull(notionDatabaseId) {
-                IllegalArgumentException("notionDatabaseId must be specified")
-            }
-            requireNotNull(notionToken) {
-                IllegalArgumentException("notionToken must be specified")
-            }
+            requiredArgument("notionDatabaseId", notionDatabaseId)
+            requiredArgument("notionToken", notionToken)
 
             NotionIssuesLoaderFactory.create(notionToken) to IssuesLoader.Params.Notion(
-                query = notionQuery.orEmpty(),
+                query = notionQuery,
                 databaseId = notionDatabaseId,
                 assigneeProperty = notionAssigneeProperty,
                 assigneePropertyMappingType = notionAssigneePropertyMappingType,
@@ -97,10 +99,27 @@ private fun CommandLineArgs.getLoaderAndParams()
         }
         ImportSource.YouTrack, ImportSource.External -> {
             val youtrackServer = youtrackServer
-            requireNotNull(youtrackServer) {
-                IllegalArgumentException("youtrackServer must be specified")
-            }
+            requiredArgument("youtrackServer", youtrackServer)
 
-            YoutrackIssuesLoaderFactory.create(youtrackServer, youtrackToken) to IssuesLoader.Params.YouTrack(youtrackQuery ?: "")
+            YoutrackIssuesLoaderFactory.create(youtrackServer, youtrackToken) to IssuesLoader.Params.YouTrack(youtrackQuery)
+        }
+        ImportSource.GitHub -> {
+            val gitHubRepositoryOwner = gitHubRepositoryOwner
+            val gitHubRepository = gitHubRepository
+            requiredArgument("gitHubRepositoryOwner", gitHubRepositoryOwner)
+            requiredArgument("gitHubRepository", gitHubRepository)
+
+            GitHubIssuesLoaderFactory.create(gitHubAuthorization) to IssuesLoader.Params.GitHub(
+                owner = gitHubRepositoryOwner,
+                repository = gitHubRepository
+            )
         }
     }
+
+@OptIn(ExperimentalContracts::class)
+fun <T> requiredArgument(name: String, value: T?) {
+    contract {
+        returns() implies (value != null)
+    }
+    requireNotNull(value) { "$name must be specified" }
+}

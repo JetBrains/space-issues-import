@@ -25,7 +25,22 @@ $ docker run public.registry.jetbrains.space/p/space/containers/space-issues-imp
 ```
 
 ### From GitHub
-`In progress`
+```
+$ docker run public.registry.jetbrains.space/p/space/containers/space-issues-import:latest 
+        --importSource GitHub
+        --gitHubAuthorization oauth::<token>
+        --gitHubRepositoryOwner JetBrains
+        --gitHubRepository space-issues-import
+        --spaceServer https://<domain>.jetbrains.space 
+        --spaceToken SECRET 
+        --spaceProject key::ABC 
+        -a "Leo Tolstoy::leonid.tolstoy" 
+        -s "in design::In-Design" 
+        -s "open::In-Design" 
+        --updateExistingIssues 
+        --replaceMissingStatus 
+        --replaceMissingAssignee
+```
 
 ### From Jira
 
@@ -83,9 +98,10 @@ usage: [-h] [--jiraServer JIRASERVER] [--jiraQuery JIRAQUERY] [--jiraUser JIRAUS
        [--notionStatusProperty NOTIONSTATUSPROPERTY] [--notionTagProperty NOTIONTAGPROPERTY]
        [--notionAssigneePropertyMappingType NOTIONASSIGNEEPROPERTYMAPPINGTYPE]
        [--notionStatusPropertyMappingType NOTIONSTATUSPROPERTYMAPPINGTYPE] [--notionTagPropertyMappingType NOTIONTAGPROPERTYMAPPINGTYPE]
-       [--tagPropertyMappingType TAGPROPERTYMAPPINGTYPE] [--notionQuery NOTIONQUERY] --spaceServer SPACESERVER --spaceToken SPACETOKEN
-       --spaceProject SPACEPROJECT [--importSource IMPORTSOURCE] [--dryRun] [--updateExistingIssues] [--replaceMissingStatus]
-       [--replaceMissingAssignee] [-a ASSIGNEE]... [-s STATUS]... [-t TAG]... [--batchSize BATCHSIZE] [--debug]
+       [--tagPropertyMappingType TAGPROPERTYMAPPINGTYPE] [--notionQuery NOTIONQUERY] [--gitHubAuthorization GITHUBAUTHORIZATION]
+       [--gitHubRepositoryOwner GITHUBREPOSITORYOWNER] [--gitHubRepository GITHUBREPOSITORY] --spaceServer SPACESERVER
+       --spaceToken SPACETOKEN --spaceProject SPACEPROJECT [--importSource IMPORTSOURCE] [--dryRun] [--updateExistingIssues]
+       [--replaceMissingStatus] [--replaceMissingAssignee] [-a ASSIGNEE]... [-s STATUS]... [-t TAG]... [--batchSize BATCHSIZE] [--debug]
 
 required arguments:
   --spaceServer SPACESERVER                                               The URL of the Space instance that you want to import into.
@@ -100,14 +116,14 @@ required arguments:
 optional arguments:
   -h, --help                                                              show this help message and exit
 
-  --jiraServer JIRASERVER                                                 The URL of the Jira server that you want to import issues from
+  --jiraServer JIRASERVER                                                 The URL of the Jira server that you want to import issues from.
 
   --jiraQuery JIRAQUERY                                                   An optional JQL query that selects the Jira issues you want to
-                                                                          import
+                                                                          import.
 
-  --jiraUser JIRAUSER                                                     An optional user name to use to login to Jira
+  --jiraUser JIRAUSER                                                     An optional user name to use to login to Jira.
 
-  --jiraApiToken JIRAAPITOKEN                                             An optional API token to use to login to Jira
+  --jiraApiToken JIRAAPITOKEN                                             An optional API token to use to login to Jira.
 
   --youtrackServer YOUTRACKSERVER                                         The URL of the YouTrack server that you want to import issues
                                                                           from.
@@ -127,15 +143,15 @@ optional arguments:
 
   --notionAssigneeProperty NOTIONASSIGNEEPROPERTY                         The name or ID of a property in Notion which will be mapped to
                                                                           the Space issue assignee. For example, name::Title or
-                                                                          id::uuid-uuid-uuid
+                                                                          id::uuid-uuid-uuid.
 
   --notionStatusProperty NOTIONSTATUSPROPERTY                             The name or ID of a property in Notion which will be mapped to
                                                                           the Space issue status. For example, name::Title or
-                                                                          id::uuid-uuid-uuid
+                                                                          id::uuid-uuid-uuid.
 
   --notionTagProperty NOTIONTAGPROPERTY                                   The name or ID of a property in Notion which will be mapped to
                                                                           the Space issue tag. For example, name::Title or
-                                                                          id::uuid-uuid-uuid
+                                                                          id::uuid-uuid-uuid.
 
   --notionAssigneePropertyMappingType NOTIONASSIGNEEPROPERTYMAPPINGTYPE   id, name, or email. Default: name. For --assignee command, what
                                                                           to map on the Notion side, e.g. '--assignee uuid-uuid::john.doe'
@@ -163,6 +179,18 @@ optional arguments:
   --notionQuery NOTIONQUERY                                               JSON string which will be used as the request body to
                                                                           databases/:id/query. By default, all the cards from the board
                                                                           are exported.
+
+  --gitHubAuthorization GITHUBAUTHORIZATION                               An optional API authorization string to use to login to GitHub.
+                                                                          Mandatory for private repositories. Can be either
+                                                                          'oauth::<oauth_token>', for OAuth (e.g. personal token);
+                                                                          'oauth_with_login::<user_id_OR_org_name>::<oauth_token>', for
+                                                                          OAuth with user id or organization name; 'jwt::<jwt_token>', for
+                                                                          JSON Web Token; or 'ait::<ait_token>', for App Installation
+                                                                          Token.
+
+  --gitHubRepositoryOwner GITHUBREPOSITORYOWNER                           The owner of the repository that you want to import issues from.
+
+  --gitHubRepository GITHUBREPOSITORY                                     The repository that you want to import issues from.
 
   --importSource IMPORTSOURCE                                             The name of the import source. Default: External.
 

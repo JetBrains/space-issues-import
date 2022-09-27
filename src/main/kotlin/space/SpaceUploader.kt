@@ -2,6 +2,7 @@ package com.jetbrains.space.import.space
 
 import com.jetbrains.space.import.common.ImportSource
 import com.jetbrains.space.import.common.ProjectPropertyType
+import com.jetbrains.space.import.common.createHttpClientLogger
 import io.ktor.client.*
 import io.ktor.client.engine.apache.*
 import io.ktor.client.features.logging.*
@@ -11,11 +12,7 @@ import space.jetbrains.api.runtime.*
 import space.jetbrains.api.runtime.resources.projects
 import space.jetbrains.api.runtime.types.*
 
-class SpaceUploader {
-    companion object {
-        private val logger = LoggerFactory.getLogger(SpaceUploader::class.java)
-    }
-
+interface SpaceUploader {
     @InternalAPI
     suspend fun upload(
         server: String,
@@ -29,14 +26,36 @@ class SpaceUploader {
         dryRun: Boolean,
         batchSize: Int,
         debug: Boolean,
-        tagPropertyMappingType: ProjectPropertyType? = null,
+        tagPropertyMappingType: ProjectPropertyType? = null
+    ): List<IssueImportResult>
+}
+
+class SpaceUploaderImpl : SpaceUploader {
+    companion object {
+        private val logger = LoggerFactory.getLogger(SpaceUploaderImpl::class.java)
+    }
+
+    @InternalAPI
+    override suspend fun upload(
+        server: String,
+        token: String,
+        issues: List<IssueTemplate>,
+        projectIdentifier: ProjectIdentifier,
+        importSource: ImportSource,
+        assigneeMissingPolicy: ImportMissingPolicy,
+        statusMissingPolicy: ImportMissingPolicy,
+        onExistsPolicy: ImportExistsPolicy,
+        dryRun: Boolean,
+        batchSize: Int,
+        debug: Boolean,
+        tagPropertyMappingType: ProjectPropertyType?
     ): List<IssueImportResult> {
         val httpClient = ktorClientForSpace()
             .let {
                 if (debug) {
                     it.config {
                         install(Logging) {
-                            logger = Logger.DEFAULT
+                            logger = SpaceUploaderImpl.logger.createHttpClientLogger()
                             level = LogLevel.ALL
                         }
                     }

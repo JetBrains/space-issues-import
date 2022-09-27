@@ -17,7 +17,10 @@ class YouTrackTest {
     @BeforeEach
     fun setUp() {
         environmentVariables = YouTrackTestEnvironmentVariables()
-        youTrackLoader = YoutrackIssuesLoaderFactory.create(environmentVariables.youTrackServer, environmentVariables.youTrackToken)
+        youTrackLoader = YoutrackIssuesLoaderFactory.create(
+            serverUrl = environmentVariables.youTrackServer,
+            token = environmentVariables.youTrackToken
+        )
     }
 
     @Test

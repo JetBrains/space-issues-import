@@ -1,6 +1,11 @@
-import com.jetbrains.space.import.common.*
+import com.jetbrains.space.import.CommandLineArgs
+import com.jetbrains.space.import.common.ExternalProjectProperty
+import com.jetbrains.space.import.common.ImportSource
+import com.jetbrains.space.import.common.IssuesLoader
+import com.jetbrains.space.import.common.ProjectPropertyType
 import com.jetbrains.space.import.notion.NotionIssuesLoaderFactory
 import io.ktor.util.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -38,4 +43,28 @@ class NotionTest {
                 )
             )
         }
+
+    @Test
+    fun `notion property cli parsing`() {
+        val id = "identifier"
+        val nameProperty = CommandLineArgs.parseNotionProperty("name::$id", "property")
+        assertCast<ExternalProjectProperty.Name>(nameProperty)
+        assertEquals(id, nameProperty.name)
+
+        val idProperty = CommandLineArgs.parseNotionProperty("id::$id", "property")
+        assertCast<ExternalProjectProperty.Id>(idProperty)
+        assertEquals(id, idProperty.id)
+    }
+
+    @Test
+    fun `notion property mapping type cli parsing`() {
+        val nameType = CommandLineArgs.parseNotionPropertyMappingType("Name")
+        assertEquals(ProjectPropertyType.Name, nameType)
+
+        val idType = CommandLineArgs.parseNotionPropertyMappingType("Id")
+        assertEquals(ProjectPropertyType.Id, idType)
+
+        val emailType = CommandLineArgs.parseNotionPropertyMappingType("Email")
+        assertEquals(ProjectPropertyType.Email, emailType)
+    }
 }

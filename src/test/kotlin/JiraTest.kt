@@ -20,9 +20,9 @@ class JiraTest {
     fun setUp() {
         environmentVariables = JiraTestEnvironmentVariables()
         jiraLoader = JiraIssuesLoaderFactory.create(
-            environmentVariables.jiraServer,
-            environmentVariables.jiraUser,
-            environmentVariables.jiraToken
+            jiraUrl = environmentVariables.jiraServer,
+            username = environmentVariables.jiraUser,
+            password = environmentVariables.jiraToken
         )
     }
 
