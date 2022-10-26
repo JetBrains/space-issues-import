@@ -19,11 +19,10 @@ import kotlin.contracts.contract
 
 
 @InternalAPI
-fun main(
-    args: Array<String>,
-    spaceUploader: SpaceUploader = SpaceUploaderImpl(),
-    getLoaderAndParams: (() -> Pair<IssuesLoader, IssuesLoader.Params>)? = null
-) = mainBody(columns = 140) {
+fun main(args: Array<String>) = mainBody(columns = 140) {
+    val spaceUploader: SpaceUploader = SpaceUploaderImpl()
+    val getLoaderAndParams: (() -> Pair<IssuesLoader, IssuesLoader.Params>)? = null
+
     CommandLineArgs(ArgParser(args)).run {
         val logger = LoggerFactory.getLogger(this.javaClass)
 
