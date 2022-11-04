@@ -1,6 +1,6 @@
 import com.jetbrains.space.import.CommandLineArgs
 import com.jetbrains.space.import.common.*
-import com.jetbrains.space.import.main
+import com.jetbrains.space.import.runMain
 import com.jetbrains.space.import.space.IssueTemplate
 import com.jetbrains.space.import.space.SpaceUploader
 import com.xenomachina.argparser.SystemExitException
@@ -117,7 +117,7 @@ class CLITest {
     private fun testExecution(args: String, spaceUploader: SpaceUploader): List<IssueTemplate> {
         val issuesLoader = TestIssuesLoader()
         val params = IssuesLoader.Params.GitHub("owner", "repo")
-        main(args.split(Regex(" +")).toTypedArray(), spaceUploader) { issuesLoader to params }
+        runMain(args.split(Regex(" +")).toTypedArray(), spaceUploader) { issuesLoader to params }
 
         val initialResult = runBlocking {
             issuesLoader.load(params)

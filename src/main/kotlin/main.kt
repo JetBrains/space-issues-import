@@ -17,9 +17,11 @@ import org.slf4j.LoggerFactory
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
+@InternalAPI
+fun main(args: Array<String>) = runMain(args)
 
 @InternalAPI
-fun main(
+internal fun runMain(
     args: Array<String>,
     spaceUploader: SpaceUploader = SpaceUploaderImpl(),
     getLoaderAndParams: (() -> Pair<IssuesLoader, IssuesLoader.Params>)? = null
