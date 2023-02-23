@@ -65,7 +65,7 @@ internal fun runMain(
                         batchSize = batchSize,
 
                         debug = debug,
-                        tagPropertyMappingType = tagPropertyMappingType,
+                        tagPropertyMappingType = tagPropertyMappingType.takeIf { importSource == ImportSource.Notion },
                     )
                 logger.info("Finished")
             } else {
