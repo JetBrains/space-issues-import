@@ -99,7 +99,7 @@ private fun CommandLineArgs.getLoaderAndParams()
                 tagPropertyMappingType = notionTagPropertyMappingType,
             )
         }
-        ImportSource.YouTrack, ImportSource.External -> {
+        ImportSource.YouTrack -> {
             val youtrackServer = youtrackServer
             requiredArgument("youtrackServer", youtrackServer)
 

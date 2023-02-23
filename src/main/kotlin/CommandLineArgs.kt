@@ -169,9 +169,9 @@ data class CommandLineArgs(private val parser: ArgParser) {
 
     val importSource by parser.storing(
         "--importSource",
-        help = "The name of the import source. Default: External.",
-        transform = { ImportSource.values().find { it.name.equals(this, ignoreCase = true) } ?: ImportSource.External }
-    ).default(ImportSource.External)
+        help = "The name of the import source. Default: YouTrack.",
+        transform = { ImportSource.values().find { it.name.equals(this, ignoreCase = true) } ?: ImportSource.YouTrack }
+    ).default(ImportSource.YouTrack)
 
     val dryRun by parser.flagging(
         "--dryRun",
