@@ -23,8 +23,10 @@ private class JiraIssuesLoader(private val jiraUrl: String, username: String?, p
     init {
         val factory = AsynchronousJiraRestClientFactory()
         val authHandler = if (username == null || password == null) {
+            logger.info("Proceed with Anonymous authentication")
             AnonymousAuthenticationHandler()
         } else {
+            logger.info("Proceed with Basic HTTP Authentification with username = \"$username\" and a password")
             BasicHttpAuthenticationHandler(username, password)
         }
 
