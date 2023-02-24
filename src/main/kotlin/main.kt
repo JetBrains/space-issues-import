@@ -48,6 +48,11 @@ internal fun runMain(
                 issuesLoadResult.issues
                     .forEach { it.resolveMappings(assigneeMapping, statusMapping, tagMapping) }
 
+                if (issuesLoadResult.issues.isEmpty()) {
+                    logger.info("Finished: nothing to import")
+                    return@runBlocking
+                }
+
                 spaceUploader
                     .upload(
                         server = spaceServer,
