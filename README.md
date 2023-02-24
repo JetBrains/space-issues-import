@@ -44,6 +44,10 @@ $ docker run public.registry.jetbrains.space/p/space/containers/space-issues-imp
 
 ### From Jira
 
+Pass `--jiraUser` and `--jiraApiToken` for [Jira Cloud](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/).
+Pass `--jiraUser` and `--jiraPassword` for [Jira Server](https://developer.atlassian.com/server/jira/platform/basic-authentication/#construct-the-authorization-header).
+To filter issues to import from JIRA, pass `--jiraQuery` as [JQL](https://support.atlassian.com/jira-service-management-cloud/docs/use-advanced-search-with-jira-query-language-jql/).
+
 ```
 $ docker run public.registry.jetbrains.space/p/space/containers/space-issues-import:latest
         --importSource Jira
@@ -52,7 +56,8 @@ $ docker run public.registry.jetbrains.space/p/space/containers/space-issues-imp
         --spaceProject key::ABC
         --jiraServer https://<domain>.atlassian.net.
         --jiraUser USER 
-        --jiraApiToken SECRET
+        --jiraApiToken SECRET // For Jira Server use --jiraPassword
+        --jiraQuery "project = KEY"
         -a "Leo Tolstoy::leonid.tolstoy" 
         -s "in design::In-Design" 
         -s "open::In-Design" 
