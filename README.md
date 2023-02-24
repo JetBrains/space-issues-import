@@ -45,8 +45,10 @@ $ docker run public.registry.jetbrains.space/p/space/containers/space-issues-imp
 ### From Jira
 
 Pass `--jiraUser` and `--jiraApiToken` for [Jira Cloud](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/).
+
 Pass `--jiraUser` and `--jiraPassword` for [Jira Server](https://developer.atlassian.com/server/jira/platform/basic-authentication/#construct-the-authorization-header).
-To filter issues to import from JIRA, pass `--jiraQuery` as [JQL](https://support.atlassian.com/jira-service-management-cloud/docs/use-advanced-search-with-jira-query-language-jql/).
+
+Pass `--jiraQuery` as [JQL](https://support.atlassian.com/jira-service-management-cloud/docs/use-advanced-search-with-jira-query-language-jql/), to filter issues you want to import from JIRA.
 
 ```
 $ docker run public.registry.jetbrains.space/p/space/containers/space-issues-import:latest
