@@ -1,5 +1,5 @@
 fun Job.buildAndRunTests() {
-    gradlew("openjdk:11", "test", "--info") {
+    gradlew("openjdk:17", "test", "--info") {
         env["GITHUB_OAUTH_TOKEN"] = Secrets("issues-import-automated-tests-github-token")
         env["GITHUB_REPO"] = Params("issues-import-automated-tests-github-repo")
         env["GITHUB_REPO_OWNER"] = Params("issues-import-automated-tests-github-repo-owner")
